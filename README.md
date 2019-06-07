@@ -1,10 +1,11 @@
-# hkgr
+# Hkgr
 
 [![Hackage](https://img.shields.io/hackage/v/hkgr.svg)](https://hackage.haskell.org/package/hkgr)
 [![GPL-3 license](https://img.shields.io/badge/license-GPL--3-blue.svg)](LICENSE)
 [![Build status](https://secure.travis-ci.org/juhp/hkgr.svg)](https://travis-ci.org/juhp/hkgr)
 
-Publish your package releases on Hackage using hkgr:
+`hkgr` (pronounced "Hackager") is a tool for package maintainers
+to release their Haskell packages on Hackage.
 
 ## Usage
 
