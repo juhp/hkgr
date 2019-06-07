@@ -1,7 +1,13 @@
+{-# LANGUAGE CPP #-}
+
 module Main (main) where
 
 import Control.Exception (bracket_)
 import Control.Monad
+#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,11,0))
+#else
+import Data.Semigroup ((<>))
+#endif
 import SimpleCmd
 import SimpleCmd.Git
 import SimpleCmdArgs
