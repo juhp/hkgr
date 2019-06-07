@@ -29,7 +29,7 @@ executable hkgrelease
   autogen-modules:     Paths_hkgrelease
 
   build-depends:       base < 5,
-                       directory,
+                       directory >= 1.2.3,
                        filepath,
                        simple-cmd >= 0.2.0,
                        simple-cmd-args
