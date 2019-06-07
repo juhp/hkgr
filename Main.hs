@@ -2,6 +2,11 @@
 
 module Main (main) where
 
+#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,8,0))
+#else
+import Control.Applicative (pure, (<$>))
+#endif
+
 import Control.Exception (bracket_)
 import Control.Monad
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,11,0))
