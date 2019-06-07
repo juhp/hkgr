@@ -1,0 +1,40 @@
+cabal-version:       2.0
+name:                hkgrelease
+version:             0.0
+synopsis:            Simple Hackage release workflow for package maintainers
+description:
+            A tool to help Hackage maintainers make new releases of
+            their packages, with commands for git tagging, pristine sdist,
+            and uploading to Hackage.
+homepage:            https://github.com/juhp/hkgrelease
+bug-reports:         https://github.com/juhp/hkgrelease/issues
+license:             GPL-3
+license-file:        LICENSE
+author:              Jens Petersen
+maintainer:          juhpetersen@gmail.com
+copyright:           2019 Jens Petersen
+category:            Util
+build-type:          Simple
+extra-doc-files:     README.md
+                   , CHANGELOG.md
+tested-with:         GHC == 8.6.5, GHC == 8.4.4, GHC == 8.2.2, GHC == 8.0.2
+
+source-repository head
+  type:                git
+  location:            https://github.com/juhp/hkgrelease.git
+
+executable hkgrelease
+  main-is:             Main.hs
+  other-modules:       Paths_hkgrelease
+  autogen-modules:     Paths_hkgrelease
+
+  build-depends:       base < 5,
+                       directory,
+                       filepath,
+                       simple-cmd,
+                       simple-cmd-args
+
+  ghc-options:         -Wall -fwarn-missing-signatures
+
+  default-language:    Haskell2010
+  default-extensions:  OverloadedStrings

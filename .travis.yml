@@ -1,20 +1,18 @@
 sudo: true
 language: haskell
 
-git:
-  depth: 5
-
 cabal: "2.4"
 
 cache:
   directories:
   - "$HOME/.cabal/store"
-  
 
 matrix:
   include:
-  - ghc: 8.6.4
-  
+  - ghc: 8.6.5
+  - ghc: 8.4.4
+  - ghc: 8.2.2
+  - ghc: 8.0.2
 
 install:
   - cabal new-update

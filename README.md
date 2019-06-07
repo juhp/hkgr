@@ -1,7 +1,17 @@
-# hckgtool
+# hkgrelease
 
-[![Hackage](https://img.shields.io/hackage/v/hckgtool.svg)](https://hackage.haskell.org/package/hckgtool)
+[![Hackage](https://img.shields.io/hackage/v/hkgrelease.svg)](https://hackage.haskell.org/package/hkgrelease)
 [![GPL-3 license](https://img.shields.io/badge/license-GPL--3-blue.svg)](LICENSE)
-[![Build status](https://secure.travis-ci.org/juhp/hckgtool.svg)](https://travis-ci.org/juhp/hckgtool)
+[![Build status](https://secure.travis-ci.org/juhp/hkgrelease.svg)](https://travis-ci.org/juhp/hkgrelease)
 
-See README for more info
+Publish your package releases on Hackage using hkgrelease:
+
+```
+$ hkgrelease tag
+$ hkgrelease dist
+$ hkgrelease upload
+$ hkgrelease push-tags
+$ hkgrelease publish
+$ hkgrelease upload-haddock
+$ hkgrelease publish-haddock
+```
