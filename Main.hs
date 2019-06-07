@@ -71,7 +71,7 @@ sdistCmd force = do
   unless haveTag $ error' $ "Please tag " <> ver <> " first!"
   cwd <- getCurrentDirectory
   withTempDirectory "tmp-sdist" $ do
-    git_ "clone" ["..", "."]
+    git_ "clone" ["-q", "--no-checkout", "..", "."]
     git_ "checkout" ["-q", ver]
     cabal_ "check" []
     cabal_ "configure" []
