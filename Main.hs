@@ -17,8 +17,8 @@ import Paths_hkgrelease (version)
 
 main :: IO ()
 main =
-  simpleCmdArgs (Just version) "Hackage maintainer release workflow"
-  "Helps Hackage package maintainers with releasing packages" $
+  simpleCmdArgs (Just version) "Hackage release workflow"
+  "A tool to help Hackage maintainers with releasing packages" $
   subcommands
   [ Subcommand "tag" "'git tag' version" $
     gitTagCmd <$> forceOpt "Move existing tag"
