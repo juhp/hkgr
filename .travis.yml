@@ -13,10 +13,12 @@ matrix:
   - ghc: 8.4.4
   - ghc: 8.2.2
   - ghc: 8.0.2
+  - ghc: 7.10.3
+  - ghc: 7.8.4
 
 install:
   - cabal new-update
-  - cabal new-build --enable-tests --enable-benchmarks
+  - cabal new-build
 
 script:
   - echo 'No tests'
