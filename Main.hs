@@ -16,12 +16,14 @@ main =
   subcommands
   [ Subcommand "tag" "'git tag' version" $ pure $ gitTagCmd False
   , Subcommand "dist" "Make tarball from latest tag ('cabal sdist')" $
-    pure sdistCmd
+    pure $ sdistCmd False
   , Subcommand "version" "Show the package version from .cabal file" $
     pure showVersionCmd
   , Subcommand "upload" "'cabal upload' tarball to Hackage" $ pure $ uploadCmd False
   , Subcommand "tag-force" "Update version tag with 'git tag --force'" $
     pure $ gitTagCmd True
+  , Subcommand "dist-force" "Force creat a new tarball (overwrites dist tarball)" $
+    pure $ sdistCmd True
   , Subcommand "push-tags" "'git push --tags' to origin" $ pure pushCmd
   , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
     pure $ uploadCmd True
@@ -54,14 +56,17 @@ gitTagCmd force = do
   ver <- getVersion
   git_ "tag" $ ["--force" | force] ++ [ver]
 
-sdistCmd :: IO ()
-sdistCmd = do
+sdistCmd :: Bool -> IO ()
+sdistCmd force = do
   ver <- getVersion
   name <- getName
   let filename = name <> "-" <> ver <.> ".tar.gz"
       target = "dist" </> filename
   haveTarget <- doesFileExist target
-  when haveTarget $ error' $ target <> " exists already"
+  when haveTarget $
+    if force
+    then removeFile target
+    else error' $ target <> " exists already!"
   haveTag <- pipeBool ("git", ["tag"]) ("grep",["-q",ver])
   unless haveTag $ error' $ "Please tag " <> ver <> " first!"
   cwd <- getCurrentDirectory
