@@ -63,10 +63,11 @@ sdistCmd force = do
   let filename = name <> "-" <> ver <.> ".tar.gz"
       target = "dist" </> filename
   haveTarget <- doesFileExist target
-  when haveTarget $
-    if force
-    then removeFile target
-    else error' $ target <> " exists already!"
+  if haveTarget
+    then if force
+         then removeFile target
+         else error' $ target <> " exists already!"
+    else when force $ error' "Target does not exist, please use 'dist' command"
   haveTag <- pipeBool ("git", ["tag"]) ("grep",["-q",ver])
   unless haveTag $ error' $ "Please tag " <> ver <> " first!"
   cwd <- getCurrentDirectory
