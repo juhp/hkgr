@@ -1,19 +1,19 @@
-# hkgrelease
+# hkgr
 
-[![Hackage](https://img.shields.io/hackage/v/hkgrelease.svg)](https://hackage.haskell.org/package/hkgrelease)
+[![Hackage](https://img.shields.io/hackage/v/hkgr.svg)](https://hackage.haskell.org/package/hkgr)
 [![GPL-3 license](https://img.shields.io/badge/license-GPL--3-blue.svg)](LICENSE)
-[![Build status](https://secure.travis-ci.org/juhp/hkgrelease.svg)](https://travis-ci.org/juhp/hkgrelease)
+[![Build status](https://secure.travis-ci.org/juhp/hkgr.svg)](https://travis-ci.org/juhp/hkgr)
 
-Publish your package releases on Hackage using hkgrelease:
+Publish your package releases on Hackage using hkgr:
 
 ## Usage
 
 ```
-$ hkgrelease
-Hackage maintainer release workflow
+$ hkgr
+HacKaGe Release workflow
 
-Usage: hkgrelease [--version] COMMAND
-  Helps Hackage package maintainers with releasing packages
+Usage: hkgr [--version] COMMAND
+  A tool to help Hackage maintainers with releasing packages
 
 Available options:
   -h,--help                Show this help text
@@ -33,12 +33,12 @@ Available commands:
 ## Example
 ```
 $ git commit -m "new release"
-$ hkgrelease tag
-$ hkgrelease dist
-$ hkgrelease upload
+$ hkgr tag
+$ hkgr dist
+$ hkgr upload
 $ git push
-$ hkgrelease push-tags
-$ hkgrelease publish
-$ hkgrelease upload-haddock
-$ hkgrelease publish-haddock
+$ hkgr push-tags
+$ hkgr publish
+$ hkgr upload-haddock
+$ hkgr publish-haddock
 ```

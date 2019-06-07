@@ -13,11 +13,11 @@ import SimpleCmd.Git
 import SimpleCmdArgs
 import System.Directory
 import System.FilePath
-import Paths_hkgrelease (version)
+import Paths_hkgr (version)
 
 main :: IO ()
 main =
-  simpleCmdArgs (Just version) "Hackage release workflow"
+  simpleCmdArgs (Just version) "HacKaGe Release workflow"
   "A tool to help Hackage maintainers with releasing packages" $
   subcommands
   [ Subcommand "tag" "'git tag' version" $
