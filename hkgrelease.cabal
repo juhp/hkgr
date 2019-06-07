@@ -31,7 +31,7 @@ executable hkgrelease
   build-depends:       base < 5,
                        directory,
                        filepath,
-                       simple-cmd,
+                       simple-cmd >= 0.2.0,
                        simple-cmd-args
   if impl(ghc<8.0)
       build-depends: semigroups
