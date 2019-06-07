@@ -1,0 +1,27 @@
+sudo: true
+language: haskell
+
+git:
+  depth: 5
+
+cabal: "2.4"
+
+cache:
+  directories:
+  - "$HOME/.cabal/store"
+  
+
+matrix:
+  include:
+  - ghc: 8.6.4
+  
+
+install:
+  - cabal new-update
+  - cabal new-build --enable-tests --enable-benchmarks
+
+script:
+  - echo 'No tests'
+
+notifications:
+  email: false
