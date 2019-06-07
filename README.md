@@ -24,7 +24,6 @@ Available commands:
   dist                     Make tarball from latest tag ('cabal sdist')
   version                  Show the package version from .cabal file
   upload                   'cabal upload' tarball to Hackage
-  tag-force                Update version tag with 'git tag --force'
   push-tags                'git push --tags' to origin
   publish                  Publish to Hackage ('cabal upload --publish')
   upload-haddock           Upload documentation to Hackage

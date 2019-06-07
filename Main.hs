@@ -14,22 +14,21 @@ main =
   simpleCmdArgs (Just version) "Hackage maintainer release workflow"
   "Helps Hackage package maintainers with releasing packages" $
   subcommands
-  [ Subcommand "tag" "'git tag' version" $ pure $ gitTagCmd False
+  [ Subcommand "tag" "'git tag' version" $
+    gitTagCmd <$> forceOpt "Move existing tag"
   , Subcommand "dist" "Make tarball from latest tag ('cabal sdist')" $
-    pure $ sdistCmd False
+    sdistCmd <$> forceOpt "Overwrite existing dist tarball"
   , Subcommand "version" "Show the package version from .cabal file" $
     pure showVersionCmd
   , Subcommand "upload" "'cabal upload' tarball to Hackage" $ pure $ uploadCmd False
-  , Subcommand "tag-force" "Update version tag with 'git tag --force'" $
-    pure $ gitTagCmd True
-  , Subcommand "dist-force" "Force creat a new tarball (overwrites dist tarball)" $
-    pure $ sdistCmd True
   , Subcommand "push-tags" "'git push --tags' to origin" $ pure pushCmd
   , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
     pure $ uploadCmd True
   , Subcommand "upload-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd False
   , Subcommand "publish-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd True
   ]
+  where
+    forceOpt = switchWith 'f' "force"
 
 getName :: IO String
 getName =
