@@ -31,6 +31,7 @@ executable hkgr
   build-depends:       base < 5,
                        directory >= 1.2.3,
                        filepath,
+                       simple-cabal,
                        simple-cmd >= 0.2.0,
                        simple-cmd-args
   if impl(ghc<8.0)

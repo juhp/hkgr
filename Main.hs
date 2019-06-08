@@ -13,6 +13,7 @@ import Control.Monad
 #else
 import Data.Semigroup ((<>))
 #endif
+import SimpleCabal
 import SimpleCmd
 import SimpleCmd.Git
 import SimpleCmdArgs
@@ -41,36 +42,16 @@ main =
   where
     forceOpt = switchWith 'f' "force"
 
-getName :: IO String
-getName =
-  takeBaseName <$> getCurrentDirectory
-
-getCabalFile :: IO FilePath
-getCabalFile = do
-  name <- getName
-  return $ name <.> "cabal"
-
-getVersion :: IO String
-getVersion = do
-  cbl <- getCabalFile
-  cmd "sed" ["-ne", "s/^[Vv]ersion:[[:space:]]*//p", cbl]
-
-getTarfile :: IO FilePath
-getTarfile = do
-  name <- getName
-  ver <- getVersion
-  return $ "dist" </> name <> "-" <> ver <.> ".tar.gz"
-
 gitTagCmd :: Bool -> IO ()
 gitTagCmd force = do
-  ver <- getVersion
-  git_ "tag" $ ["--force" | force] ++ [ver]
+  pkgid <- getPackageId
+  git_ "tag" $ ["--force" | force] ++ [packageVersion pkgid]
 
 sdistCmd :: Bool -> IO ()
 sdistCmd force = do
-  ver <- getVersion
-  name <- getName
-  let filename = name <> "-" <> ver <.> ".tar.gz"
+  pkgid <- getPackageId
+  let ver = packageVersion pkgid
+  let filename = showPkgId pkgid <.> ".tar.gz"
       target = "dist" </> filename
   haveTarget <- doesFileExist target
   if haveTarget
@@ -93,12 +74,13 @@ sdistCmd force = do
 
 showVersionCmd :: IO ()
 showVersionCmd = do
-  ver <- getVersion
-  putStrLn ver
+  pkgid <- getPackageId
+  putStrLn $ packageVersion pkgid
 
 uploadCmd :: Bool -> IO ()
 uploadCmd publish = do
-  file <- getTarfile
+  pkgid <- getPackageId
+  let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
 
 pushCmd :: IO ()
