@@ -4,8 +4,8 @@
 [![GPL-3 license](https://img.shields.io/badge/license-GPL--3-blue.svg)](LICENSE)
 [![Build status](https://secure.travis-ci.org/juhp/hkgr.svg)](https://travis-ci.org/juhp/hkgr)
 
-`hkgr` (pronounced "Hackager") is a tool for package maintainers
-to release their Haskell packages on Hackage.
+`hkgr` (pronounced "Hackager") is a tool for making releases of
+Haskell packages on Hackage.
 
 ## Usage
 
@@ -37,9 +37,9 @@ $ git commit -m "new release"
 $ hkgr tag
 $ hkgr dist
 $ hkgr upload
+$ hkgr upload-haddock
 $ git push
 $ hkgr push-tags
 $ hkgr publish
-$ hkgr upload-haddock
 $ hkgr publish-haddock
 ```
