@@ -69,7 +69,7 @@ sdistCmd force = do
          else error' $ target <> " exists already!"
     else when force $ error' "Target does not exist, please use 'dist' command"
   haveTag <- pipeBool ("git", ["tag"]) ("grep",["-q",ver])
-  unless haveTag $ error' $ "Please tag " <> ver <> " first!"
+  unless haveTag $ gitTagCmd False
   cwd <- getCurrentDirectory
   withTempDirectory "tmp-sdist" $ do
     git_ "clone" ["-q", "--no-checkout", "..", "."]
