@@ -33,11 +33,11 @@ main =
   , Subcommand "version" "Show the package version from .cabal file" $
     pure showVersionCmd
   , Subcommand "upload" "'cabal upload' tarball to Hackage" $ pure $ uploadCmd False
-  , Subcommand "push-tags" "'git push --tags' to origin" $ pure pushCmd
   , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
     pure $ uploadCmd True
   , Subcommand "upload-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd False
   , Subcommand "publish-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd True
+  , Subcommand "push-tags" "'git push --tags' to origin" $ pure pushCmd
   ]
   where
     forceOpt = switchWith 'f' "force"
@@ -92,7 +92,9 @@ uploadCmd publish = do
   checkNotPublished pkgid
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
-  when publish $ createFileLink file (takeFileName file <.> "published")
+  when publish $ do
+    git_ "push" [tag]
+    createFileLink file (takeFileName file <.> "published")
 
 pushCmd :: IO ()
 pushCmd =
