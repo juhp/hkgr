@@ -48,7 +48,9 @@ gitTagCmd force = do
   let published = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
   exists <- doesFileExist published
   when (force && exists) $ error' $ showPkgId pkgid <> " was already published!!"
-  git_ "tag" $ ["--force" | force] ++ [packageVersion pkgid]
+  let tag = packageVersion pkgid
+  git_ "tag" $ ["--force" | force] ++ [tag]
+  unless force $ putStrLn tag
 
 sdistCmd :: Bool -> IO ()
 sdistCmd force = do
