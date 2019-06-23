@@ -89,7 +89,7 @@ uploadCmd publish = do
   pkgid <- getPackageId
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
-  when publish $ createFileLink file (file <.> "published")
+  when publish $ createFileLink file (takeFileName file <.> "published")
 
 pushCmd :: IO ()
 pushCmd =
