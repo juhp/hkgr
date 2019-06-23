@@ -29,7 +29,7 @@ executable hkgr
   autogen-modules:     Paths_hkgr
 
   build-depends:       base < 5,
-                       directory >=  >= 1.3.1.0,
+                       directory >= 1.3.1.0,
                        filepath,
                        simple-cabal,
                        simple-cmd >= 0.2.0,
