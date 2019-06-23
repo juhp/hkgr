@@ -45,21 +45,23 @@ main =
 gitTagCmd :: Bool -> IO ()
 gitTagCmd force = do
   pkgid <- getPackageId
-  let published = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
-  exists <- doesFileExist published
-  when (force && exists) $ error' $ showPkgId pkgid <> " was already published!!"
+  checkNotPublished pkgid
   let tag = packageVersion pkgid
   git_ "tag" $ ["--force" | force] ++ [tag]
   unless force $ putStrLn tag
+
+checkNotPublished :: PackageIdentifier -> IO ()
+checkNotPublished pkgid = do
+  let published = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+  exists <- doesFileExist published
+  when exists $ error' $ showPkgId pkgid <> " was already published!!"
 
 sdistCmd :: Bool -> IO ()
 sdistCmd force = do
   pkgid <- getPackageId
   let ver = packageVersion pkgid
   let target = "dist" </> showPkgId pkgid <.> ".tar.gz"
-      published = target <.> "published"
-  exists <- doesFileExist published
-  when (force && exists) $ error' $ target <> " was already published!!"
+  checkNotPublished pkgid
   haveTarget <- doesFileExist target
   if haveTarget
     then if force
@@ -87,6 +89,7 @@ showVersionCmd = do
 uploadCmd :: Bool -> IO ()
 uploadCmd publish = do
   pkgid <- getPackageId
+  checkNotPublished pkgid
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
   when publish $ createFileLink file (takeFileName file <.> "published")

@@ -1,6 +1,6 @@
 cabal-version:       2.0
 name:                hkgr
-version:             0.0
+version:             0.1
 synopsis:            Simple Hackage release workflow for package maintainers
 description:
             Hkgr (pronouced "Hackager") is a tool to help make new releases of
