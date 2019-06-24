@@ -31,14 +31,15 @@ Available commands:
 
 ## Explanation
 
-You are preparing for a release:
+You are preparing for a release...
+
+You commit changes to your package and push them to check CI results:
 
 ```
 $ git commit -m "new release"
 $ git push
 ```
 
-You commit changes to your package and push them to check CI results.
 
 ### tagdist
 
@@ -64,26 +65,30 @@ If sdist fails for some reason then hkgr tries to reset the tag.
 ### upload
 ```
 $ hkgr upload
-$ hkgr upload-haddock
 ```
-
 This uploads a candidate dist tarball to Hackage: this can be repeated.
 
-Haddock draft documentation can also be uploaded if desired.
+Haddock draft documentation can also be uploaded if desired:
+```
+$ hkgr upload-haddock
+```
 
 ### publish
 Once you are happy, you can release to Hackage:
 
 ```
 $ hkgr publish
-$ hkgr publish-haddock
 ```
 
-This releases the version to Hackage.
 If it succeeds then hkgr creates a published "lockfile" in `dist/`,
 and hkgr will then refuse to do commands on a released package.
 The git tag is then pushed to origin.
 
+Optionally one can publish haddock docs:
+```
+$ hkgr publish-haddock
+```
+
 ## Requirements
 
-hkgr uses `cabal-install` `git`, and also `hlint` if available.
+hkgr uses `cabal-install`, `git`, and also `hlint` if available.
