@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.1 (2019-06-24)
+- fix creation of published symlink lockfile
+
 ## 0.2 (2019-06-24)
 - merge tag and dist commands into tagdist
 - if sdist fails then reset tag
