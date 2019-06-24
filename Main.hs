@@ -9,6 +9,7 @@ import Control.Applicative (pure, (<$>))
 
 import Control.Exception (bracket_)
 import Control.Monad
+import Data.Maybe
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,11,0))
 #else
 import Data.Semigroup ((<>))
@@ -26,29 +27,34 @@ main =
   simpleCmdArgs (Just version) "HacKaGe Release workflow"
   "A tool to help Hackage maintainers with releasing packages" $
   subcommands
-  [ Subcommand "tag" "'git tag' version" $
-    gitTagCmd <$> forceOpt "Move existing tag"
-  , Subcommand "dist" "Make tarball from latest tag ('cabal sdist')" $
-    sdistCmd <$> forceOpt "Overwrite existing dist tarball"
-  , Subcommand "version" "Show the package version from .cabal file" $
-    pure showVersionCmd
+  [ Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
+    tagDistCmd <$> forceOpt "Move existing tag"
   , Subcommand "upload" "'cabal upload' tarball to Hackage" $ pure $ uploadCmd False
   , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
     pure $ uploadCmd True
   , Subcommand "upload-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd False
   , Subcommand "publish-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd True
-  , Subcommand "push-tags" "'git push --tags' to origin" $ pure pushCmd
+  , Subcommand "version" "Show the package version from .cabal file" $
+    pure showVersionCmd
   ]
   where
     forceOpt = switchWith 'f' "force"
 
-gitTagCmd :: Bool -> IO ()
-gitTagCmd force = do
+tagDistCmd :: Bool -> IO ()
+tagDistCmd force = do
   pkgid <- getPackageId
   checkNotPublished pkgid
   let tag = packageVersion pkgid
+  tagHash <- cmdMaybe "git" ["rev-parse", tag]
+  when (isJust tagHash && not force) $
+    error' "tag exists: use --force to override"
   git_ "tag" $ ["--force" | force] ++ [tag]
   unless force $ putStrLn tag
+  distOk <- sdist force pkgid
+  unless distOk $
+    if force
+    then git_ "tag" [tag, fromJust tagHash]
+    else git_ "tag" ["--delete", tag]
 
 checkNotPublished :: PackageIdentifier -> IO ()
 checkNotPublished pkgid = do
@@ -56,20 +62,16 @@ checkNotPublished pkgid = do
   exists <- doesFileExist published
   when exists $ error' $ showPkgId pkgid <> " was already published!!"
 
-sdistCmd :: Bool -> IO ()
-sdistCmd force = do
-  pkgid <- getPackageId
+sdist :: Bool -> PackageIdentifier -> IO Bool
+sdist force pkgid = do
   let ver = packageVersion pkgid
   let target = "dist" </> showPkgId pkgid <.> ".tar.gz"
-  checkNotPublished pkgid
   haveTarget <- doesFileExist target
   if haveTarget
     then if force
          then removeFile target
          else error' $ target <> " exists already!"
     else when force $ error' "Target does not exist, please use 'dist' command"
-  haveTag <- pipeBool ("git", ["tag"]) ("grep",["-q",ver])
-  unless haveTag $ gitTagCmd False
   cwd <- getCurrentDirectory
   withTempDirectory "tmp-sdist" $ do
     git_ "clone" ["-q", "--no-checkout", "..", "."]
@@ -78,8 +80,9 @@ sdistCmd force = do
     cabal_ "configure" []
     -- cabal_ "build" []
     cmd_ "hlint" ["."]
-    cabal_ "sdist" []
-    renameFile target (cwd </> target)
+    distOk <- cmdBool "cabal" ["sdist"]
+    when distOk $ renameFile target (cwd </> target)
+    return distOk
 
 showVersionCmd :: IO ()
 showVersionCmd = do
@@ -93,13 +96,9 @@ uploadCmd publish = do
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
   when publish $ do
+    createFileLink file (takeFileName file <.> "published")
     let tag = packageVersion pkgid
     git_ "push" ["origin", tag]
-    createFileLink file (takeFileName file <.> "published")
-
-pushCmd :: IO ()
-pushCmd =
-  git_ "push" ["--tags"]
 
 upHaddockCmd :: Bool -> IO ()
 upHaddockCmd publish =

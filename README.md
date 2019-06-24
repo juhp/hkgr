@@ -21,22 +21,19 @@ Available options:
   --version                Show version
 
 Available commands:
-  tag                      'git tag' version
-  dist                     Make tarball from latest tag ('cabal sdist')
-  version                  Show the package version from .cabal file
+  tagdist                  'git tag' version and 'cabal sdist' tarball
   upload                   'cabal upload' tarball to Hackage
   publish                  Publish to Hackage ('cabal upload --publish')
   upload-haddock           Upload documentation to Hackage
   publish-haddock          Upload documentation to Hackage
-  push-tags                'git push --tags' to origin
+  version                  Show the package version from .cabal file
 ```
 
 ## Example
 ```
 $ git commit -m "new release"
 $ git push
-$ hkgr tag
-$ hkgr dist
+$ hkgr tagdist
 $ hkgr upload
 $ hkgr upload-haddock
 $ hkgr publish
