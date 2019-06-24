@@ -80,7 +80,9 @@ sdist force pkgid = do
     cabal_ "check" []
     cabal_ "configure" []
     -- cabal_ "build" []
-    cmd_ "hlint" ["."]
+    mhlint <- findExecutable "hlint"
+    when (isJust mhlint) $
+      cmd_ "hlint" ["."]
     distOk <- cmdBool "cabal" ["sdist"]
     when distOk $ renameFile target (cwd </> target)
     return distOk
