@@ -95,6 +95,8 @@ uploadCmd publish = do
   pkgid <- getPackageId
   checkNotPublished pkgid
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
+  exists <- doesFileExist file
+  unless exists $ tagDistCmd False
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
   when publish $ do
     createFileLink (takeFileName file) (file <.> "published")
