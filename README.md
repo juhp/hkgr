@@ -42,9 +42,7 @@ $ git push
 
 
 ### tagdist
-
-If all is good, time for a candidate release:
-
+Now you want to dist tarball, which is done from a git tag:
 ```
 $ hkgr tagdist
 ```
@@ -57,16 +55,18 @@ If the tag already exists
 you can use `--force` to move the tag to the latest commit
 and generate a new tarball off that, otherwise `tagdist` will refuse to run.
 
-One should not be able to run tagdist for an already published (released)
+One should not be able to force tagdist for an already published (released)
 version.
 
 If sdist fails for some reason then hkgr tries to reset the tag.
 
 ### upload
+If all is good, time for a candidate release:
+
 ```
 $ hkgr upload
 ```
-This uploads a candidate dist tarball to Hackage: this can be repeated.
+This uploads a candidate dist tarball to Hackage, which can be repeated.
 
 Haddock draft documentation can also be uploaded if desired:
 ```
@@ -80,8 +80,8 @@ Once you are happy, you can release to Hackage:
 $ hkgr publish
 ```
 
-If it succeeds then hkgr creates a published "lockfile" in `dist/`,
-and hkgr will then refuse to do commands on a released package.
+If it succeeds then hkgr creates a published "lockfile" in `dist/`.
+`hkgr` will then refuse to do commands on a released package.
 The git tag is then pushed to origin.
 
 Optionally one can publish haddock docs:
