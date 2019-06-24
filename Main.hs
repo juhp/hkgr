@@ -51,9 +51,10 @@ tagDistCmd force = do
   git_ "tag" $ ["--force" | force] ++ [tag]
   unless force $ putStrLn tag
   distOk <- sdist force pkgid
-  unless distOk $
+  unless distOk $ do
+    putStrLn "Resetting tag"
     if force
-    then git_ "tag" [tag, fromJust tagHash]
+    then git_ "tag" ["--force", tag, fromJust tagHash]
     else git_ "tag" ["--delete", tag]
 
 checkNotPublished :: PackageIdentifier -> IO ()
