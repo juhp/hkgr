@@ -11,10 +11,10 @@ Haskell packages on Hackage.
 
 ```
 $ hkgr
-HacKaGe Release workflow
+hkgr: HacKaGe Release workflow
 
 Usage: hkgr [--version] COMMAND
-  A tool to help Hackage maintainers with releasing packages
+  'Hackager' is a tool to help Hackage maintainers with releasing packages
 
 Available options:
   -h,--help                Show this help text
