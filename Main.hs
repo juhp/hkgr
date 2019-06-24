@@ -29,11 +29,11 @@ main =
   subcommands
   [ Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
     tagDistCmd <$> forceOpt "Move existing tag"
-  , Subcommand "upload" "'cabal upload' tarball to Hackage" $ pure $ uploadCmd False
+  , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $ pure $ uploadCmd False
   , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
     pure $ uploadCmd True
-  , Subcommand "upload-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd False
-  , Subcommand "publish-haddock" "Upload documentation to Hackage" $ pure $ upHaddockCmd True
+  , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $ pure $ upHaddockCmd False
+  , Subcommand "publish-haddock" "Publish documentation to Hackage" $ pure $ upHaddockCmd True
   , Subcommand "version" "Show the package version from .cabal file" $
     pure showVersionCmd
   ]

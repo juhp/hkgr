@@ -22,10 +22,10 @@ Available options:
 
 Available commands:
   tagdist                  'git tag' version and 'cabal sdist' tarball
-  upload                   'cabal upload' tarball to Hackage
+  upload                   'cabal upload' candidate tarball to Hackage
   publish                  Publish to Hackage ('cabal upload --publish')
-  upload-haddock           Upload documentation to Hackage
-  publish-haddock          Upload documentation to Hackage
+  upload-haddock           Upload candidate documentation to Hackage
+  publish-haddock          Publish documentation to Hackage
   version                  Show the package version from .cabal file
 ```
 
