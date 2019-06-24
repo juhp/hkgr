@@ -46,17 +46,19 @@ Now you want to make a dist tarball, which is done from a git tag:
 ```
 $ hkgr tagdist
 ```
-The `tagdist` command reads the current package version
-(from the `.cabal` file in the current directory) to `git tag`,
-and then runs `cabal sdist` on a temporary pristine checkout of that tag.
+The `tagdist` command first reads the current package version
+(from the `.cabal` file in the current directory), and uses that to `git tag`.
+It then runs `cabal sdist` from a temporary pristine checkout of the tag
+to generate the dist tarball.
 
-If the tag already exists
-(eg if you already ran `tagdist` earlier for the current version),
+If the tag already exists (eg if you already ran `tagdist` earlier),
+and you need to add commits to the release
 you can use `--force` to move the tag to the latest commit
 and generate a new tarball off that,
-otherwise `tagdist` will refuse to run again.
+otherwise `tagdist` refuses to run again to prevent accidently overwriting
+the tag and dist tarball.
 
-One should not be able to (force) `tagdist` for an already published
+One should not be able to `tagdist` on an already published
 (ie released) version.
 
 (If sdist fails for some reason then hkgr tries to reset the tag.)
@@ -82,9 +84,9 @@ $ hkgr publish
 ```
 
 If it succeeds then hkgr creates a "published lockfile" in `dist/`,
-and the git tag gets pushed to origin.
+and the git tag is pushed to origin.
 
-(Then hkgr will refuse to do commands for the released version.)
+(Then hkgr will refuse to do further commands on the released version.)
 
 Optionally one can publish haddock docs:
 ```
