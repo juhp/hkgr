@@ -25,21 +25,20 @@ Available commands:
   dist                     Make tarball from latest tag ('cabal sdist')
   version                  Show the package version from .cabal file
   upload                   'cabal upload' tarball to Hackage
-  push-tags                'git push --tags' to origin
   publish                  Publish to Hackage ('cabal upload --publish')
   upload-haddock           Upload documentation to Hackage
   publish-haddock          Upload documentation to Hackage
+  push-tags                'git push --tags' to origin
 ```
 
 ## Example
 ```
 $ git commit -m "new release"
+$ git push
 $ hkgr tag
 $ hkgr dist
 $ hkgr upload
 $ hkgr upload-haddock
-$ git push
-$ hkgr push-tags
 $ hkgr publish
 $ hkgr publish-haddock
 ```
