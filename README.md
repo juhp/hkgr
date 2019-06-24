@@ -31,7 +31,8 @@ Available commands:
 
 ## Explanation
 
-### tagdist
+You are preparing for a release:
+
 ```
 $ git commit -m "new release"
 $ git push
@@ -39,8 +40,9 @@ $ git push
 
 You commit changes to your package and push them to check CI results.
 
-If all is good, time for a candidate release:
+### tagdist
 
+If all is good, time for a candidate release:
 
 ```
 $ hkgr tagdist
@@ -65,12 +67,13 @@ $ hkgr upload
 $ hkgr upload-haddock
 ```
 
-This uploads a candidate tarball to Hackage: this can be repeated.
+This uploads a candidate dist tarball to Hackage: this can be repeated.
+
 Haddock draft documentation can also be uploaded if desired.
 
+### publish
 Once you are happy, you can release to Hackage:
 
-### publish
 ```
 $ hkgr publish
 $ hkgr publish-haddock
