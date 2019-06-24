@@ -24,8 +24,8 @@ import Paths_hkgr (version)
 
 main :: IO ()
 main =
-  simpleCmdArgs (Just version) "hkgr: HacKaGe Release workflow"
-  "'Hackager' tool to help Hackage maintainers with releasing packages" $
+  simpleCmdArgs (Just version) "Hackage Release tool"
+  "'Hackager' is a package release tool for easy Hackage workflow" $
   subcommands
   [ Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
     tagDistCmd <$> forceOpt "Move existing tag"
