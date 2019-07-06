@@ -42,20 +42,23 @@ main =
 
 tagDistCmd :: Bool -> IO ()
 tagDistCmd force = do
-  pkgid <- getPackageId
-  checkNotPublished pkgid
-  let tag = packageVersion pkgid
-  tagHash <- cmdMaybe "git" ["rev-parse", tag]
-  when (isJust tagHash && not force) $
-    error' "tag exists: use --force to override"
-  git_ "tag" $ ["--force" | force] ++ [tag]
-  unless force $ putStrLn tag
-  distOk <- sdist force pkgid
-  unless distOk $ do
-    putStrLn "Resetting tag"
-    if force
-    then git_ "tag" ["--force", tag, fromJust tagHash]
-    else git_ "tag" ["--delete", tag]
+  mhlint <- findExecutable "hlint"
+  hlintOk <- if isJust mhlint then cmdBool "hlint" ["."] else return True
+  when hlintOk $ do
+    pkgid <- getPackageId
+    checkNotPublished pkgid
+    let tag = packageVersion pkgid
+    tagHash <- cmdMaybe "git" ["rev-parse", tag]
+    when (isJust tagHash && not force) $
+      error' "tag exists: use --force to override"
+    git_ "tag" $ ["--force" | force] ++ [tag]
+    unless force $ putStrLn tag
+    distOk <- sdist force pkgid
+    unless distOk $ do
+      putStrLn "Resetting tag"
+      if force
+        then git_ "tag" ["--force", tag, fromJust tagHash]
+        else git_ "tag" ["--delete", tag]
 
 checkNotPublished :: PackageIdentifier -> IO ()
 checkNotPublished pkgid = do
@@ -79,13 +82,9 @@ sdist force pkgid = do
     cabal_ "check" []
     cabal_ "configure" []
     -- cabal_ "build" []
-    mhlint <- findExecutable "hlint"
-    hlint <- if (isJust mhlint) then cmdBool "hlint" ["."] else return True
-    if hlint then do
-      distOk <- cmdBool "cabal" ["sdist"]
-      when distOk $ renameFile target (cwd </> target)
-      return distOk
-      else return False
+    distOk <- cmdBool "cabal" ["sdist"]
+    when distOk $ renameFile target (cwd </> target)
+    return distOk
 
 showVersionCmd :: IO ()
 showVersionCmd = do
