@@ -80,11 +80,12 @@ sdist force pkgid = do
     cabal_ "configure" []
     -- cabal_ "build" []
     mhlint <- findExecutable "hlint"
-    when (isJust mhlint) $
-      cmd_ "hlint" ["."]
-    distOk <- cmdBool "cabal" ["sdist"]
-    when distOk $ renameFile target (cwd </> target)
-    return distOk
+    hlint <- if (isJust mhlint) then cmdBool "hlint" ["."] else return True
+    if hlint then do
+      distOk <- cmdBool "cabal" ["sdist"]
+      when distOk $ renameFile target (cwd </> target)
+      return distOk
+      else return False
 
 showVersionCmd :: IO ()
 showVersionCmd = do
