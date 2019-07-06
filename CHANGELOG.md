@@ -1,7 +1,9 @@
 # Changelog
 
 ## 0.2.2 (2019-07-06)
-- bugfix: hlint failing caused no tarball which could only be fixed manually
+- run hlint before git tag
+- relax force sdist when no existing tarball
+- show git diff to warn project dirty
 
 ## 0.2.1 (2019-06-24)
 - fix creation of published symlink lockfile
