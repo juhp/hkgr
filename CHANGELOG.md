@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2 (2019-07-06)
+- bugfix: hlint failing caused no tarball which could only be fixed manually
+
 ## 0.2.1 (2019-06-24)
 - fix creation of published symlink lockfile
 - tagdist before `cabal upload` if no tarball
