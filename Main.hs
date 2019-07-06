@@ -68,11 +68,10 @@ sdist force pkgid = do
   let ver = packageVersion pkgid
   let target = "dist" </> showPkgId pkgid <.> ".tar.gz"
   haveTarget <- doesFileExist target
-  if haveTarget
-    then if force
-         then removeFile target
-         else error' $ target <> " exists already!"
-    else when force $ error' "Target does not exist, please use 'dist' command"
+  when haveTarget $
+    if force
+    then removeFile target
+    else error' $ target <> " exists already!"
   cwd <- getCurrentDirectory
   withTempDirectory "tmp-sdist" $ do
     git_ "clone" ["-q", "--no-checkout", "..", "."]
