@@ -101,8 +101,7 @@ uploadCmd publish = do
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
   when publish $ do
     createFileLink (takeFileName file) (file <.> "published")
-    let tag = packageVersion pkgid
-    git_ "push" ["origin", tag]
+    git_ "push" ["--follow-tags"]
 
 upHaddockCmd :: Bool -> IO ()
 upHaddockCmd publish =
