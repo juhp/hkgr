@@ -7,7 +7,7 @@ module Main (main) where
 import Control.Applicative (pure, (<$>))
 #endif
 
-import Control.Exception (bracket_)
+import Control.Exception (bracket_, onException)
 import Control.Monad
 import Data.Maybe
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,11,0))
@@ -53,8 +53,7 @@ tagDistCmd force = do
     error' "tag exists: use --force to override"
   git_ "tag" $ ["--force" | force] ++ [tag]
   unless force $ putStrLn tag
-  distOk <- sdist force pkgid
-  unless distOk $ do
+  sdist force pkgid `onException` do
     putStrLn "Resetting tag"
     if force
       then git_ "tag" ["--force", tag, fromJust tagHash]
@@ -66,7 +65,7 @@ checkNotPublished pkgid = do
   exists <- doesFileExist published
   when exists $ error' $ showPkgId pkgid <> " was already published!!"
 
-sdist :: Bool -> PackageIdentifier -> IO Bool
+sdist :: Bool -> PackageIdentifier -> IO ()
 sdist force pkgid = do
   let ver = packageVersion pkgid
   let target = "dist" </> showPkgId pkgid <.> ".tar.gz"
@@ -82,9 +81,8 @@ sdist force pkgid = do
     cabal_ "check" []
     cabal_ "configure" []
     -- cabal_ "build" []
-    distOk <- cmdBool "cabal" ["sdist"]
-    when distOk $ renameFile target (cwd </> target)
-    return distOk
+    cabal_ "sdist" []
+    renameFile target (cwd </> target)
 
 showVersionCmd :: IO ()
 showVersionCmd = do
