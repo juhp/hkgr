@@ -100,6 +100,8 @@ uploadCmd publish = do
   when publish $ do
     createFileLink (takeFileName file) (file <.> "published")
     let tag = packageVersion pkgid
+    -- first push ref of tag and then tag, surely you are joking
+    git_ "push" ["origin", tag]
     git_ "push" ["origin", tag]
 
 upHaddockCmd :: Bool -> IO ()
