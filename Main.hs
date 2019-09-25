@@ -43,8 +43,12 @@ main =
 tagDistCmd :: Bool -> IO ()
 tagDistCmd force = do
   mhlint <- findExecutable "hlint"
-  git_ "diff" []
   when (isJust mhlint) $ void $ cmdBool "hlint" ["."]
+  diff <- git "diff" []
+  unless (null diff) $ do
+    putStrLn "=== start of uncommitted changes ==="
+    putStrLn diff
+    putStrLn "=== end of uncommitted changes ==="
   pkgid <- getPackageId
   checkNotPublished pkgid
   let tag = packageVersion pkgid
