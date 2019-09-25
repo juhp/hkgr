@@ -51,7 +51,7 @@ tagDistCmd force = do
     putStrLn "=== end of uncommitted changes ==="
   pkgid <- getPackageId
   checkNotPublished pkgid
-  let tag = packageVersion pkgid
+  let tag = pkgidTag pkgid
   tagHash <- cmdMaybe "git" ["rev-parse", tag]
   when (isJust tagHash && not force) $
     error' "tag exists: use --force to override"
@@ -62,6 +62,9 @@ tagDistCmd force = do
     if force
       then git_ "tag" ["--force", tag, fromJust tagHash]
       else git_ "tag" ["--delete", tag]
+
+pkgidTag :: PackageIdentifier -> String
+pkgidTag pkgid = "v" ++ prettyShow pkgid
 
 checkNotPublished :: PackageIdentifier -> IO ()
 checkNotPublished pkgid = do
@@ -103,7 +106,7 @@ uploadCmd publish = do
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
   when publish $ do
     createFileLink (takeFileName file) (file <.> "published")
-    let tag = packageVersion pkgid
+    let tag = pkgidTag pkgid
     -- first push ref of tag and then tag, surely you are joking
     git_ "push" ["origin", tag]
     git_ "push" ["origin", tag]
