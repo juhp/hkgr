@@ -43,8 +43,8 @@ main =
 tagDistCmd :: Bool -> IO ()
 tagDistCmd force = do
   mhlint <- findExecutable "hlint"
-  when (isJust mhlint) $ cmd_ "hlint" ["."]
   git_ "diff" []
+  when (isJust mhlint) $ void $ cmdBool "hlint" ["."]
   pkgid <- getPackageId
   checkNotPublished pkgid
   let tag = packageVersion pkgid
