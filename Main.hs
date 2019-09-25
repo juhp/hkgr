@@ -61,14 +61,14 @@ tagDistCmd force = do
 
 checkNotPublished :: PackageIdentifier -> IO ()
 checkNotPublished pkgid = do
-  let published = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+  let published = "dist" </> prettyShow pkgid <.> ".tar.gz" <.> "published"
   exists <- doesFileExist published
-  when exists $ error' $ showPkgId pkgid <> " was already published!!"
+  when exists $ error' $ prettyShow pkgid <> " was already published!!"
 
 sdist :: Bool -> PackageIdentifier -> IO ()
 sdist force pkgid = do
   let ver = packageVersion pkgid
-  let target = "dist" </> showPkgId pkgid <.> ".tar.gz"
+  let target = "dist" </> prettyShow pkgid <.> ".tar.gz"
   haveTarget <- doesFileExist target
   when haveTarget $
     if force
@@ -93,7 +93,7 @@ uploadCmd :: Bool -> IO ()
 uploadCmd publish = do
   pkgid <- getPackageId
   checkNotPublished pkgid
-  let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
+  let file = "dist" </> prettyShow pkgid <.> ".tar.gz"
   exists <- doesFileExist file
   unless exists $ tagDistCmd False
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
