@@ -107,8 +107,10 @@ uploadCmd publish = do
   when publish $ do
     createFileLink (takeFileName file) (file <.> "published")
     let tag = pkgidTag pkgid
-    tagHash <- cmd "git" ["rev-parse", tag]
-    git_ "push" ["origin", tagHash]
+    --tagHash <- cmd "git" ["rev-parse", tag]
+    --branch <- cmd "git" ["tag", "--show-current"]
+    --git_ "push" ["origin", tagHash ++ ":master"]
+    git_ "push" ["origin"]
     git_ "push" ["origin", tag]
 
 upHaddockCmd :: Bool -> IO ()
