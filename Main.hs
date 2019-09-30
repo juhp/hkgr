@@ -64,18 +64,18 @@ tagDistCmd force = do
       else git_ "tag" ["--delete", tag]
 
 pkgidTag :: PackageIdentifier -> String
-pkgidTag pkgid = "v" ++ prettyShow pkgid
+pkgidTag pkgid = "v" ++ packageVersion pkgid
 
 checkNotPublished :: PackageIdentifier -> IO ()
 checkNotPublished pkgid = do
-  let published = "dist" </> prettyShow pkgid <.> ".tar.gz" <.> "published"
+  let published = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
   exists <- doesFileExist published
-  when exists $ error' $ prettyShow pkgid <> " was already published!!"
+  when exists $ error' $ showPkgId pkgid <> " was already published!!"
 
 sdist :: Bool -> PackageIdentifier -> IO ()
 sdist force pkgid = do
-  let ver = packageVersion pkgid
-  let target = "dist" </> prettyShow pkgid <.> ".tar.gz"
+  let tag = pkgidTag pkgid
+  let target = "dist" </> showPkgId pkgid <.> ".tar.gz"
   haveTarget <- doesFileExist target
   when haveTarget $
     if force
@@ -84,7 +84,7 @@ sdist force pkgid = do
   cwd <- getCurrentDirectory
   withTempDirectory "tmp-sdist" $ do
     git_ "clone" ["-q", "--no-checkout", "..", "."]
-    git_ "checkout" ["-q", ver]
+    git_ "checkout" ["-q", tag]
     cabal_ "check" []
     cabal_ "configure" []
     -- cabal_ "build" []
@@ -100,7 +100,7 @@ uploadCmd :: Bool -> IO ()
 uploadCmd publish = do
   pkgid <- getPackageId
   checkNotPublished pkgid
-  let file = "dist" </> prettyShow pkgid <.> ".tar.gz"
+  let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   exists <- doesFileExist file
   unless exists $ tagDistCmd False
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
