@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 (2019-09-30)
+- push git tag
+- hlint is now a warning not an error
+- prefix version tags with v
+- surround git diff output with quote lines
+- catch exception for sdist
+
 ## 0.2.2 (2019-07-06)
 - run hlint before git tag
 - relax force sdist when no existing tarball
