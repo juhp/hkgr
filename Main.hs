@@ -103,15 +103,15 @@ uploadCmd publish = do
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   exists <- doesFileExist file
   unless exists $ tagDistCmd False
+  when publish $ do
+    let tag = pkgidTag pkgid
+    tagHash <- cmd "git" ["rev-parse", tag]
+    branch <- cmd "git" ["branch", "--show-current"]
+    git_ "push" ["origin", tagHash ++ ":" ++ branch]
+    git_ "push" ["origin", tag]
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
   when publish $ do
     createFileLink (takeFileName file) (file <.> "published")
-    let tag = pkgidTag pkgid
-    --tagHash <- cmd "git" ["rev-parse", tag]
-    --branch <- cmd "git" ["tag", "--show-current"]
-    --git_ "push" ["origin", tagHash ++ ":master"]
-    git_ "push" ["origin"]
-    git_ "push" ["origin", tag]
 
 upHaddockCmd :: Bool -> IO ()
 upHaddockCmd publish =
