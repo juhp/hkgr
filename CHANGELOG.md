@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4 (2019-10-05)
+- git push before publishing
+- only push up to tag
+
 ## 0.2.3 (2019-09-30)
 - push git tag
 - hlint is now a warning not an error
