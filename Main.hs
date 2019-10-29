@@ -42,6 +42,7 @@ main =
 
 tagDistCmd :: Bool -> IO ()
 tagDistCmd force = do
+  needProgram "cabal"
   mhlint <- findExecutable "hlint"
   when (isJust mhlint) $ void $ cmdBool "hlint" ["."]
   diff <- git "diff" []
@@ -125,3 +126,9 @@ withTempDirectory :: FilePath -> IO a -> IO a
 withTempDirectory dir run =
   bracket_ (createDirectory dir) (removeDirectoryRecursive dir) $
   withCurrentDirectory dir run
+
+-- simple-cmd 0.2.2:
+needProgram :: String -> IO ()
+needProgram prog = do
+  mx <- findExecutable prog
+  unless (isJust mx) $ error' $ "program needs " ++ prog
