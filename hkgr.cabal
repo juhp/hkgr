@@ -34,7 +34,7 @@ executable hkgr
                        filepath,
                        simple-cabal,
                        simple-cmd >= 0.2.0,
-                       simple-cmd-args
+                       simple-cmd-args >= 0.1.1
   if impl(ghc<8.0)
       build-depends: semigroups
 
