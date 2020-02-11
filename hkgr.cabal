@@ -12,7 +12,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              Jens Petersen
 maintainer:          juhpetersen@gmail.com
-copyright:           2019 Jens Petersen
+copyright:           2019-2020  Jens Petersen
 category:            Util
 build-type:          Simple
 extra-doc-files:     README.md
