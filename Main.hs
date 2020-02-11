@@ -111,7 +111,7 @@ uploadCmd publish = do
     git_ "push" ["origin", tagHash ++ ":" ++ branch]
     git_ "push" ["origin", tag]
   cabal_ "upload" $ ["--publish" | publish] ++ [file]
-  when publish $ do
+  when publish $
     createFileLink (takeFileName file) (file <.> "published")
 
 upHaddockCmd :: Bool -> IO ()
