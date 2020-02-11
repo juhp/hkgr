@@ -3,7 +3,7 @@ name:                hkgr
 version:             0.2.4.1
 synopsis:            Simple Hackage release workflow for package maintainers
 description:
-            Hkgr (pronouced "Hackager") is a tool to help make new releases of
+            Hkgr (pronounced "Hackager") is a tool to help make new releases of
             Haskell packages, with commands for git tagging, pristine sdist,
             and uploading to Hackage.
 homepage:            https://github.com/juhp/hkgr
