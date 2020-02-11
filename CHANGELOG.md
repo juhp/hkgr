@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4.1 (2020-02-11)
+- assert that cabal-install installed
+- run hlint in git checkout instead of working tree
+
 ## 0.2.4 (2019-10-05)
 - git push before publishing
 - only push up to tag
