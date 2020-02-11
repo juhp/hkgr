@@ -127,8 +127,10 @@ withTempDirectory dir run =
   bracket_ (createDirectory dir) (removeDirectoryRecursive dir) $
   withCurrentDirectory dir run
 
--- simple-cmd 0.2.2:
+#if (defined(MIN_VERSION_simple_cmd) && MIN_VERSION_simple_cmd(0,2,1))
+#else
 needProgram :: String -> IO ()
 needProgram prog = do
   mx <- findExecutable prog
   unless (isJust mx) $ error' $ "program needs " ++ prog
+#endif
