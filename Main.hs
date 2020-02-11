@@ -43,8 +43,6 @@ main =
 tagDistCmd :: Bool -> IO ()
 tagDistCmd force = do
   needProgram "cabal"
-  mhlint <- findExecutable "hlint"
-  when (isJust mhlint) $ void $ cmdBool "hlint" ["."]
   diff <- git "diff" []
   unless (null diff) $ do
     putStrLn "=== start of uncommitted changes ==="
@@ -87,6 +85,8 @@ sdist force pkgid = do
     git_ "clone" ["-q", "--no-checkout", "..", "."]
     git_ "checkout" ["-q", tag]
     cabal_ "check" []
+    mhlint <- findExecutable "hlint"
+    when (isJust mhlint) $ void $ cmdBool "hlint" ["."]
     cabal_ "configure" []
     -- cabal_ "build" []
     cabal_ "sdist" []
