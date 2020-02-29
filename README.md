@@ -109,7 +109,6 @@ and the git tag is pushed to origin.
 (Then hkgr will refuse to do further commands on the released version.)
 
 Optionally one can publish haddock docs with `hkgr publish-haddock`.
-```
 
 ## Requirements
 
