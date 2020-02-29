@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.5.2 (2020-02-29)
+- no hlint summary
+- fix published message
+
 ## 0.2.5.1 (2020-02-29)
 - improve output for hlint and uploaded url
 - also check for staged changes

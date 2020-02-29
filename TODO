@@ -3,3 +3,4 @@
 - check/warning about unpushed tags
 - run testsuite
 - use v2 commands for cabal-install-3
+- prepare changelog
