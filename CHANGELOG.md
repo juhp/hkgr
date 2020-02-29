@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.5 (2020-02-29)
+- check that package version is committed
+- use quiet cabal v1-configure and v1-sdist commands
+
 ## 0.2.4.1 (2020-02-11)
 - assert that cabal-install installed
 - run hlint in git checkout instead of working tree

@@ -1,4 +1,5 @@
-- support stack
+- support stack (stkgr?)
 - short help
 - check/warning about unpushed tags
 - run testsuite
+- use v2 commands for cabal-install-3
