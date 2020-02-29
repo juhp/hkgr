@@ -4,7 +4,7 @@ cabal: "2.4"
 
 cache:
   directories:
-  - "$HOME/.cabal/store"
+  - "$HOME/.cabal"
 
 ghc:
   - 8.8.2
