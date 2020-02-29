@@ -32,7 +32,7 @@ executable hkgr
   build-depends:       base < 5,
                        directory >= 1.3.1.0,
                        filepath,
-                       simple-cabal,
+                       simple-cabal >= 0.1.0,
                        simple-cmd >= 0.2.0,
                        simple-cmd-args >= 0.1.1
   if impl(ghc<8.0)
