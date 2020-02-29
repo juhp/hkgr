@@ -48,7 +48,7 @@ main =
 tagDistCmd :: Bool -> IO ()
 tagDistCmd force = do
   needProgram "cabal"
-  diff <- git "diff" []
+  diff <- git "diff" ["HEAD"]
   unless (null diff) $ do
     putStrLn "=== start of uncommitted changes ==="
     putStrLn diff
@@ -79,7 +79,7 @@ checkPackage = do
 checkVersionCommitted :: PackageIdentifier -> IO ()
 checkVersionCommitted pkgid = do
   let pkg = packageName pkgid
-  diff <- git "diff" ["-U0", unPackageName pkg <.> "cabal"]
+  diff <- git "diff" ["-U0", "HEAD", unPackageName pkg <.> "cabal"]
   when ("version:" `isInfixOf` map toLower diff) $
     error' "Please commit or revert the package Version first"
 
