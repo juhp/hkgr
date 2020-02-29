@@ -97,9 +97,9 @@ sdist force pkgid = do
     cabal_ "check" []
     mhlint <- findExecutable "hlint"
     when (isJust mhlint) $ void $ cmdBool "hlint" ["."]
-    cabal_ "configure" []
+    cabal_ "v1-configure" []
     -- cabal_ "build" []
-    cabal_ "sdist" []
+    cabal_ "v1-sdist" []
     renameFile target (cwd </> target)
 
 showVersionCmd :: IO ()
