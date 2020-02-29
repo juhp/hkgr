@@ -53,9 +53,7 @@ tagDistCmd force = do
     putStrLn "=== start of uncommitted changes ==="
     putStrLn diff
     putStrLn "=== end of uncommitted changes ==="
-  pkgid <- getPackageId
-  checkVersionCommitted pkgid
-  checkNotPublished pkgid
+  pkgid <- checkPackage
   let tag = pkgidTag pkgid
   tagHash <- cmdMaybe "git" ["rev-parse", tag]
   when (isJust tagHash && not force) $
@@ -70,6 +68,13 @@ tagDistCmd force = do
 
 pkgidTag :: PackageIdentifier -> String
 pkgidTag pkgid = "v" ++ packageVersion pkgid
+
+checkPackage :: IO PackageIdentifier
+checkPackage = do
+  pkgid <- getPackageId
+  checkVersionCommitted pkgid
+  checkNotPublished pkgid
+  return pkgid
 
 checkVersionCommitted :: PackageIdentifier -> IO ()
 checkVersionCommitted pkgid = do
@@ -112,9 +117,7 @@ showVersionCmd = do
 
 uploadCmd :: Bool -> IO ()
 uploadCmd publish = do
-  pkgid <- getPackageId
-  checkVersionCommitted pkgid
-  checkNotPublished pkgid
+  pkgid <- checkPackage
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   exists <- doesFileExist file
   unless exists $ tagDistCmd False
