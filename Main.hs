@@ -127,7 +127,8 @@ uploadCmd publish = do
     branch <- cmd "git" ["branch", "--show-current"]
     git_ "push" ["origin", tagHash ++ ":" ++ branch]
     git_ "push" ["origin", tag]
-  cabal_ "upload" $ ["--publish" | publish] ++ [file]
+  cabal_ "upload" $ ["-v0"] ++ ["--publish" | publish] ++ [file]
+  putStrLn $ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
     createFileLink (takeFileName file) (file <.> "published")
 
