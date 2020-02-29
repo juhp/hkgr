@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.5.1 (2020-02-29)
+- improve output for hlint and uploaded url
+
 ## 0.2.5 (2020-02-29)
 - check that package version is committed
 - use quiet cabal v1-configure and v1-sdist commands
