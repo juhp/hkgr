@@ -105,8 +105,8 @@ sdist force pkgid = do
     cabal_ "check" []
     mhlint <- findExecutable "hlint"
     when (isJust mhlint) $ do
-      putStrLn "Running hlint:"
-      void $ cmdBool "hlint" ["."]
+      putStrLn "Running hlint"
+      void $ cmdBool "hlint" ["--no-summary", "."]
     cabal_ "v1-configure" []
     -- cabal_ "build" []
     cabal_ "v1-sdist" []
