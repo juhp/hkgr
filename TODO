@@ -2,4 +2,3 @@
 - short help
 - check/warning about unpushed tags
 - run testsuite
-- stop if version not committed

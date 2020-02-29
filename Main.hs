@@ -9,6 +9,8 @@ import Control.Applicative (pure, (<$>))
 
 import Control.Exception (bracket_, onException)
 import Control.Monad
+import Data.Char
+import Data.List
 import Data.Maybe
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,11,0))
 #else
@@ -49,6 +51,7 @@ tagDistCmd force = do
     putStrLn diff
     putStrLn "=== end of uncommitted changes ==="
   pkgid <- getPackageId
+  checkVersionCommitted pkgid
   checkNotPublished pkgid
   let tag = pkgidTag pkgid
   tagHash <- cmdMaybe "git" ["rev-parse", tag]
@@ -64,6 +67,13 @@ tagDistCmd force = do
 
 pkgidTag :: PackageIdentifier -> String
 pkgidTag pkgid = "v" ++ packageVersion pkgid
+
+checkVersionCommitted :: PackageIdentifier -> IO ()
+checkVersionCommitted pkgid = do
+  let pkg = packageName pkgid
+  diff <- git "diff" ["-U0", unPackageName pkg <.> "cabal"]
+  when ("version:" `isInfixOf` map toLower diff) $
+    error' "Please commit or revert the package Version first"
 
 checkNotPublished :: PackageIdentifier -> IO ()
 checkNotPublished pkgid = do
@@ -100,6 +110,7 @@ showVersionCmd = do
 uploadCmd :: Bool -> IO ()
 uploadCmd publish = do
   pkgid <- getPackageId
+  checkVersionCommitted pkgid
   checkNotPublished pkgid
   let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
   exists <- doesFileExist file
