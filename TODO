@@ -4,3 +4,4 @@
 - run testsuite
 - use v2 commands for cabal-install-3
 - prepare changelog
+- check cabal-install version

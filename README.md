@@ -7,49 +7,80 @@
 `hkgr` (pronounced "hackager") is a tool for making releases of
 Haskell packages on Hackage.
 
-## Usage
+It uses a cautious stepped approach to releases.
 
-```
-$ hkgr
-Hackage Release tool
+## Example usage
 
-Usage: hkgr [--version] COMMAND
-  'Hackager' is a tool for easy Hackage package release workflow
+Here is an example of doing a release of hkgr itself.
 
-Available options:
-  -h,--help                Show this help text
-  --version                Show version
+After committing the latest changes for the release, create a tag and tarball:
 
-Available commands:
-  tagdist                  'git tag' version and 'cabal sdist' tarball
-  upload                   'cabal upload' candidate tarball to Hackage
-  publish                  Publish to Hackage ('cabal upload --publish')
-  upload-haddock           Upload candidate documentation to Hackage
-  publish-haddock          Publish documentation to Hackage
-  version                  Show the package version from .cabal file
-```
-
-## Explanation
-
-You are preparing for a release...
-
-So you commit changes to your package and push them to check CI results:
-
-```
-$ git commit -m "new release"
-$ git push
-```
-
-
-### tagdist
-Now you want to make a dist tarball, which is done from a git tag:
 ```
 $ hkgr tagdist
+v0.2.5
+No errors or warnings could be found in the package.
+Running hlint
+./Main.hs:107:28: Warning: Redundant do
+Found:
+  do void $ cmdBool "hlint" ["."]
+Perhaps:
+  void $ cmdBool "hlint" ["."]
+Resolving dependencies...
+Configuring hkgr-0.2.5...
+Building source dist for hkgr-0.2.5...
+Preprocessing executable 'hkgr' for hkgr-0.2.5..
+Source tarball created: dist/hkgr-0.2.5.tar.gz
 ```
+
+After fixing up, retag a new tarball:
+
+```
+$ hkgr tagdist -f
+Updated tag 'v0.2.5' (was 55b69db)
+No errors or warnings could be found in the package.
+Running hlint
+Resolving dependencies...
+Configuring hkgr-0.2.5...
+Building source dist for hkgr-0.2.5...
+Preprocessing executable 'hkgr' for hkgr-0.2.5..
+Source tarball created: dist/hkgr-0.2.5.tar.gz
+```
+
+The tarball can now be uploaded to Hackage as a candidate release:
+
+```
+$ hkgr upload
+
+Uploaded to https://hackage.haskell.org/package/hkgr-0.2.5/candidate
+```
+
+One can continue to `tagdist -f` and `upload` until
+everything looks good and CI passed etc,
+then it is time to push the final tag and publish the release:
+
+```
+$ hkgr publish
+Everything up-to-date
+Total 0 (delta 0), reused 0 (delta 0)
+To github.com:juhp/hkgr.git
+ * [new tag]         v0.2.5 -> v0.2.5
+
+Published at https://hackage.haskell.org/package/hkgr-0.2.5
+```
+
+## Details
+
+### tagdist
+`hkgr tagdist` makes a dist tarball from a git tag:
+
 The `tagdist` command first reads the current package version
 (from the `.cabal` file in the current directory), and uses that to `git tag`.
 It then runs `cabal sdist` from a temporary pristine checkout of the tag
 to generate the dist tarball.
+
+Note that hkgr is lenient: it allows making a release with uncommitted changes
+in the working tree, but it will show the uncommitted changes.
+However the version must be committed.
 
 If the tag already exists (eg if you already ran `tagdist` earlier),
 and you need to add commits to the release
@@ -59,40 +90,27 @@ otherwise `tagdist` refuses to run again to prevent accidently overwriting
 the tag and dist tarball.
 
 One should not be able to `tagdist` on an already published
-(ie released) version.
+(ie released) version made with hkgr.
 
-(If sdist fails for some reason then hkgr tries to reset the tag.)
+If sdist fails for some reason then hkgr tries to reset the tag.
 
 ### upload
-If all is good, it's time for a candidate release:
+`hkgr upload` uploads the tarball to Hackage as a candidate release.
+Like `hkgr tagdist -f`, this can be repeated.
 
-```
-$ hkgr upload
-```
-This uploads a candidate dist tarball to Hackage: this can be repeated.
-
-Haddock draft documentation can also be uploaded if desired:
-```
-$ hkgr upload-haddock
-```
+Haddock draft documentation can also be uploaded if desired with `hkgr upload-haddock`.
 
 ### publish
-Once you are happy, you can release to Hackage:
-
-```
-$ hkgr publish
-```
+`hkgr publish` releases the tarball to Hackage.
 
 If it succeeds then hkgr creates a "published lockfile" in `dist/`,
 and the git tag is pushed to origin.
 
 (Then hkgr will refuse to do further commands on the released version.)
 
-Optionally one can publish haddock docs:
-```
-$ hkgr publish-haddock
+Optionally one can publish haddock docs with `hkgr publish-haddock`.
 ```
 
 ## Requirements
 
-hkgr uses `cabal-install`, `git`, and also `hlint` if available.
+hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
