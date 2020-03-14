@@ -57,7 +57,7 @@ tagDistCmd force = do
   let tag = pkgidTag pkgid
   tagHash <- cmdMaybe "git" ["rev-parse", tag]
   when (isJust tagHash && not force) $
-    error' "tag exists: use --force to override"
+    error' $ "tag " ++ tag ++ " exists: use --force to override and move"
   git_ "tag" $ ["--force" | force] ++ [tag]
   unless force $ putStrLn tag
   sdist force pkgid `onException` do
