@@ -29,7 +29,9 @@ main =
   simpleCmdArgs (Just version) "Hackage Release tool"
   "'Hackager' is a package release tool for easy Hackage workflow" $
   subcommands
-  [ Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
+  [ Subcommand "new" "setup a new project" $
+    newCmd <$> optional (strArg "PROJECT")
+  , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
     tagDistCmd <$> forceOpt "Move existing tag"
   , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
     pure $ uploadCmd False
@@ -153,4 +155,57 @@ needProgram :: String -> IO ()
 needProgram prog = do
   mx <- findExecutable prog
   unless (isJust mx) $ error' $ "program needs " ++ prog
+#endif
+
+-- FIXME add default templates dir
+-- FIXME --lib --exe
+newCmd :: Maybe String -> IO ()
+newCmd mproject = do
+  name <- case mproject of
+    Just ns -> return ns
+    Nothing -> do
+      files <- listDirectory "."
+      if null files then takeFileName <$> getCurrentDirectory
+        else do
+        -- filter out dirs
+        dirs <- filterM doesDirectoryExist files
+        if dirs == files then error' "Could not guess name"
+          else do
+          case filter ("cabal" `isExtensionOf`) $ files \\ dirs of
+            [] -> takeFileName <$> getCurrentDirectory
+            [cbl] -> return $ takeBaseName cbl
+            _ -> error' "More than one .cabal file found!"
+  when (isJust mproject) $ createDirectory name >> setCurrentDirectory name
+  haveGit <- doesDirectoryExist ".git"
+  unless haveGit $ git_ "init" []
+  mcabal <- checkForCabalFile
+  case mcabal of
+    Nothing -> do
+      let setupFile = "Setup.hs"
+      origsetup <- doesFileExist setupFile
+      cabal_ "init" ["--minimal", "--non-interactive"]
+      -- FIXME setup better default .cabal template
+      unless origsetup $ do
+        setup <- doesFileExist setupFile
+        when setup $ removeFile setupFile
+    -- FIXME warn if name different
+    Just _cbl -> return ()
+  haveStack <- doesFileExist "stack.yaml"
+  unless haveStack $ do
+    cmd_ "stack" ["init"] -- FIXME remove comments
+    cmd_ "sed" ["-i", "-e", "/^#/d", "-e", "/^$/d", "stack.yaml"]
+  where
+    checkForCabalFile :: IO (Maybe String)
+    checkForCabalFile = do
+      files <- listDirectory "."
+      case filter ("cabal" `isExtensionOf`) files of
+        [] -> return Nothing
+        [cbl] -> return $ Just (takeBaseName cbl)
+        _ -> error' "More than one .cabal file found!"
+
+#if (defined(MIN_VERSION_filepath) && MIN_VERSION_filepath(1,4,2))
+#else
+    isExtensionOf :: String -> FilePath -> Bool
+    isExtensionOf ext@('.':_) = isSuffixOf ext . takeExtensions
+    isExtensionOf ext         = isSuffixOf ('.':ext) . takeExtensions
 #endif
