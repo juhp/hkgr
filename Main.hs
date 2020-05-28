@@ -180,8 +180,6 @@ newCmd mproject = do
             [cbl] -> return $ takeBaseName cbl
             _ -> error' "More than one .cabal file found!"
   when (isJust mproject) $ createDirectory name >> setCurrentDirectory name
-  haveGit <- doesDirectoryExist ".git"
-  unless haveGit $ git_ "init" []
   mcabal <- checkForCabalFile
   case mcabal of
     Nothing -> do
@@ -198,6 +196,8 @@ newCmd mproject = do
   unless haveStack $ do
     cmd_ "stack" ["init"] -- FIXME remove comments
     cmd_ "sed" ["-i", "-e", "/^#/d", "-e", "/^$/d", "stack.yaml"]
+  haveGit <- doesDirectoryExist ".git"
+  unless haveGit $ git_ "init" []
   where
     checkForCabalFile :: IO (Maybe String)
     checkForCabalFile = do
