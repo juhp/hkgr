@@ -16,7 +16,10 @@ import Data.Maybe
 import Data.Monoid ((<>))
 #endif
 import SimpleCabal
-import SimpleCmd hiding (whenM)
+import SimpleCmd
+#if MIN_VERSION_simple_cmd(0,2,1)
+  hiding (whenM)
+#endif
 import SimpleCmd.Git
 import SimpleCmdArgs
 import System.Directory
@@ -253,9 +256,13 @@ newCmd mproject = do
                 else toUpper (head part) : tail part
           in intercalate "." $ map titlecase $ wordsBy (== '-') pkg
 
-#if (defined(MIN_VERSION_filepath) && MIN_VERSION_filepath(1,4,2))
-#else
+#if !MIN_VERSION_filepath(1,4,2)
     isExtensionOf :: String -> FilePath -> Bool
     isExtensionOf ext@('.':_) = isSuffixOf ext . takeExtensions
     isExtensionOf ext         = isSuffixOf ('.':ext) . takeExtensions
+#endif
+
+#if !MIN_VERSION_extra(1,6,15)
+fromMaybeM :: Monad m => m a -> m (Maybe a) -> m a
+fromMaybeM n x = maybeM n pure x
 #endif
