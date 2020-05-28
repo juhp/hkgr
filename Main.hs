@@ -87,14 +87,20 @@ checkVersionCommitted pkgid = do
 
 checkNotPublished :: PackageIdentifier -> IO ()
 checkNotPublished pkgid = do
-  let published = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+  let published = sdistDir </> showPkgId pkgid <.> ".tar.gz" <.> "published"
   exists <- doesFileExist published
   when exists $ error' $ showPkgId pkgid <> " was already published!!"
+  let oldpublished = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+  oldExists <- doesFileExist oldpublished
+  when oldExists $ error' $ showPkgId pkgid <> " was already published!!"
+
+sdistDir :: FilePath
+sdistDir = "dist-newstyle/sdist"
 
 sdist :: Bool -> PackageIdentifier -> IO ()
 sdist force pkgid = do
   let tag = pkgidTag pkgid
-  let target = "dist" </> showPkgId pkgid <.> ".tar.gz"
+  let target = sdistDir </> showPkgId pkgid <.> ".tar.gz"
   haveTarget <- doesFileExist target
   when haveTarget $
     if force
@@ -109,10 +115,8 @@ sdist force pkgid = do
     when (isJust mhlint) $ do
       putStrLn "Running hlint"
       void $ cmdBool "hlint" ["--no-summary", "."]
-    cabal_ "v1-configure" []
-    -- cabal_ "build" []
-    cabal_ "v1-sdist" []
-    renameFile target (cwd </> target)
+    let dest = takeDirectory $ cwd </> target
+    cabal_ "v2-sdist" ["--output-dir=" ++ dest ]
 
 showVersionCmd :: IO ()
 showVersionCmd = do
@@ -122,7 +126,7 @@ showVersionCmd = do
 uploadCmd :: Bool -> IO ()
 uploadCmd publish = do
   pkgid <- checkPackage
-  let file = "dist" </> showPkgId pkgid <.> ".tar.gz"
+  let file = sdistDir </> showPkgId pkgid <.> ".tar.gz"
   exists <- doesFileExist file
   unless exists $ tagDistCmd False
   when publish $ do
