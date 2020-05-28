@@ -189,6 +189,7 @@ newCmd mproject = do
       let setupFile = "Setup.hs"
       origsetup <- doesFileExist setupFile
       cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=BSD3", "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=app"]
+      sed ["/module Main where/,+1 d"] "app/Main.hs"
       whenM (doesFileExist "CHANGELOG.md") $
         renameFile "CHANGELOG.md" "ChangeLog.md"
       unless origsetup $ do
