@@ -35,8 +35,6 @@ executable hkgr
                        simple-cabal >= 0.1.0,
                        simple-cmd >= 0.2.0,
                        simple-cmd-args >= 0.1.2
-  if impl(ghc<8.0)
-      build-depends: semigroups
 
   ghc-options:         -Wall
 
