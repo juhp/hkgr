@@ -8,21 +8,22 @@ import Control.Applicative (pure, (<$>))
 #endif
 
 import Control.Exception (bracket_, onException)
-import Control.Monad
+import Control.Monad.Extra
 import Data.Char
-import Data.List
+import Data.List.Extra
 import Data.Maybe
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,11,0))
 #else
 import Data.Monoid ((<>))
 #endif
 import SimpleCabal
-import SimpleCmd
+import SimpleCmd hiding (whenM)
 import SimpleCmd.Git
 import SimpleCmdArgs
 import System.Directory
+import System.Environment.XDG.BaseDir
 import System.FilePath
-import Paths_hkgr (version)
+import Paths_hkgr (getDataFileName, version)
 
 main :: IO ()
 main =
@@ -191,6 +192,7 @@ newCmd mproject = do
       unless origsetup $ do
         setup <- doesFileExist setupFile
         when setup $ removeFile setupFile
+      setupCabalTemplate name
     Just cblName ->
       when (cblName /= name) $
       putStrLn $ "Warning: " ++ cblName ++ " different to " ++ name
@@ -214,6 +216,43 @@ newCmd mproject = do
     sed :: [String] -> FilePath -> IO ()
     sed args file =
       cmd_ "sed" $ ["-i", "-e"] ++ intersperse "-e" args ++ [file]
+
+    setupCabalTemplate :: String -> IO ()
+    setupCabalTemplate name = do
+      userTemplate <- getUserConfigFile "hkgr" "template.cabal"
+      unlessM (doesFileExist userTemplate) $ do
+        origTemplate <- getDataFileName "template.cabal.tmpl"
+        createDirectoryIfMissing True $ takeDirectory userTemplate
+        -- FIXME put a copy of the current template there too for reference
+        copyFile origTemplate userTemplate
+        username <- git "config" ["--global", "user.name"]
+        replaceHolder "NAME" username userTemplate
+        usermail <-
+          fromMaybeM (git "config" ["--global", "user.email"]) $
+            cmdMaybe "git" ["config", "--global", "github.email"]
+        replaceHolder "EMAIL" usermail userTemplate
+        githubuser <- git "config" ["--global", "github.user"]
+        replaceHolder "USER" githubuser userTemplate
+        putStrLn $ userTemplate ++ " set up"
+      copyFile userTemplate $ name <.> "cabal"
+      replaceHolder "PROJECT" name $ name <.> "cabal"
+      replaceHolder "PROJECT_" (map underscore name) $ name <.> "cabal"
+      replaceHolder "SUMMARY" (name ++ " project") $ name <.> "cabal"
+      year <- cmd "date" ["+%Y"]
+      replaceHolder "YEAR" year $ name <.> "cabal"
+      replaceHolder "MODULE" (toModule name) $ name <.> "cabal"
+      where
+        replaceHolder lbl val file =
+          sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"] file
+
+        underscore '-' = '_'
+        underscore c = c
+
+        toModule pkg =
+          let titlecase part =
+                if null part then part
+                else toUpper (head part) : tail part
+          in intercalate "." $ map titlecase $ wordsBy (== '-') pkg
 
 #if (defined(MIN_VERSION_filepath) && MIN_VERSION_filepath(1,4,2))
 #else
