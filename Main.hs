@@ -185,8 +185,7 @@ newCmd mproject = do
     Nothing -> do
       let setupFile = "Setup.hs"
       origsetup <- doesFileExist setupFile
-      cabal_ "init" ["--minimal", "--non-interactive"]
-      -- FIXME setup better default .cabal template
+      cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=BSD3", "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5"]
       unless origsetup $ do
         setup <- doesFileExist setupFile
         when setup $ removeFile setupFile
