@@ -2,8 +2,7 @@
 
 module Main (main) where
 
-#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,8,0))
-#else
+#if !MIN_VERSION_base(4,8,0)
 import Control.Applicative (pure, (<$>))
 #endif
 
@@ -163,7 +162,7 @@ needProgram prog = do
 #endif
 
 -- FIXME add default templates dir
--- FIXME --lib --exe
+-- FIXME --license
 newCmd :: Maybe String -> IO ()
 newCmd mproject = do
   name <- case mproject of
@@ -175,7 +174,7 @@ newCmd mproject = do
         -- filter out dirs
         dirs <- filterM doesDirectoryExist files
         if dirs == files then error' "Could not guess name"
-          else do
+          else
           case filter ("cabal" `isExtensionOf`) $ files \\ dirs of
             [] -> takeFileName <$> getCurrentDirectory
             [cbl] -> return $ takeBaseName cbl
