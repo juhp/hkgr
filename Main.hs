@@ -244,7 +244,11 @@ newCmd mproject = do
       replaceHolder "SUMMARY" (name ++ " project") $ name <.> "cabal"
       year <- cmd "date" ["+%Y"]
       replaceHolder "YEAR" year $ name <.> "cabal"
-      replaceHolder "MODULE" (toModule name) $ name <.> "cabal"
+      let moduleName = toModule name
+      replaceHolder "MODULE" moduleName $ name <.> "cabal"
+      let modulePath = "src" </> (intercalate "/" $ wordsBy (== '.') moduleName) <.> "hs"
+      createDirectoryIfMissing True $ takeDirectory modulePath
+      writeFile modulePath $ "module " ++ moduleName ++ " where \n"
       where
         replaceHolder lbl val file =
           sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"] file
