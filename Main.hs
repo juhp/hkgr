@@ -191,13 +191,15 @@ newCmd mproject = do
       unless origsetup $ do
         setup <- doesFileExist setupFile
         when setup $ removeFile setupFile
-  haveStack <- doesFileExist "stack.yaml"
-  unless haveStack $ do
-    cmd_ "stack" ["init"] -- FIXME remove comments
-    cmd_ "sed" ["-i", "-e", "/^#/d", "-e", "/^$/d", "stack.yaml"]
     Just cblName ->
       when (cblName /= name) $
       putStrLn $ "Warning: " ++ cblName ++ " different to " ++ name
+  haveStackCfg <- doesFileExist "stack.yaml"
+  mstack <- findExecutable "stack"
+  -- FIXME add stack.yaml template too
+  when (not haveStackCfg && isJust mstack) $ do
+    cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-14"]
+    sed ["/^#/d", "/^$/d"] "stack.yaml"
   haveGit <- doesDirectoryExist ".git"
   unless haveGit $ git_ "init" []
   where
@@ -208,6 +210,10 @@ newCmd mproject = do
         [] -> return Nothing
         [cbl] -> return $ Just (takeBaseName cbl)
         _ -> error' "More than one .cabal file found!"
+
+    sed :: [String] -> FilePath -> IO ()
+    sed args file =
+      cmd_ "sed" $ ["-i", "-e"] ++ intersperse "-e" args ++ [file]
 
 #if (defined(MIN_VERSION_filepath) && MIN_VERSION_filepath(1,4,2))
 #else
