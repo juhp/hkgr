@@ -191,12 +191,13 @@ newCmd mproject = do
       unless origsetup $ do
         setup <- doesFileExist setupFile
         when setup $ removeFile setupFile
-    -- FIXME warn if name different
-    Just _cbl -> return ()
   haveStack <- doesFileExist "stack.yaml"
   unless haveStack $ do
     cmd_ "stack" ["init"] -- FIXME remove comments
     cmd_ "sed" ["-i", "-e", "/^#/d", "-e", "/^$/d", "stack.yaml"]
+    Just cblName ->
+      when (cblName /= name) $
+      putStrLn $ "Warning: " ++ cblName ++ " different to " ++ name
   haveGit <- doesDirectoryExist ".git"
   unless haveGit $ git_ "init" []
   where
