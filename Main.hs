@@ -205,7 +205,9 @@ newCmd mproject = do
     cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-14"]
     sed ["/^#/d", "/^$/d"] "stack.yaml"
   haveGit <- doesDirectoryExist ".git"
-  unless haveGit $ git_ "init" []
+  unless haveGit $ do
+    git_ "init" ["-q"]
+    git_ "add" [name <.> "cabal"]
   where
     checkForCabalFile :: IO (Maybe String)
     checkForCabalFile = do
