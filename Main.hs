@@ -249,7 +249,7 @@ newCmd mproject = do
       replaceHolder "YEAR" year $ name <.> "cabal"
       let moduleName = toModule name
       replaceHolder "MODULE" moduleName $ name <.> "cabal"
-      let modulePath = "src" </> (intercalate "/" $ wordsBy (== '.') moduleName) <.> "hs"
+      let modulePath = "src" </> intercalate "/" (wordsBy (== '.') moduleName) <.> "hs"
       createDirectoryIfMissing True $ takeDirectory modulePath
       writeFile modulePath $ "module " ++ moduleName ++ " where \n"
       where
@@ -273,5 +273,5 @@ newCmd mproject = do
 
 #if !MIN_VERSION_extra(1,6,15)
 fromMaybeM :: Monad m => m a -> m (Maybe a) -> m a
-fromMaybeM n x = maybeM n pure x
+fromMaybeM n = maybeM n pure
 #endif
