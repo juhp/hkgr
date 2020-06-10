@@ -192,6 +192,8 @@ newCmd mproject = do
       sed ["/module Main where/,+1 d"] "app/Main.hs"
       whenM (doesFileExist "CHANGELOG.md") $
         renameFile "CHANGELOG.md" "ChangeLog.md"
+      unlessM (doesFileExist "README.md") $
+        writeFile "README.md" $ "# " ++ name ++ "\n"
       unless origsetup $ do
         setup <- doesFileExist setupFile
         when setup $ removeFile setupFile
