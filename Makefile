@@ -5,7 +5,7 @@ stack-all:
 	@echo
 	stack --resolver lts-15 build
 	@echo
-	stack --resolver lts-14 build
+	stack --resolver lts-14 --stack-yaml stack-lts14.yaml build
 	@echo
 	stack --resolver lts-13 --stack-yaml stack-lts13.yaml build
 	@echo

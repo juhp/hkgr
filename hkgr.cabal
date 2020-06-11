@@ -38,7 +38,7 @@ executable hkgr
                      , filepath
                      , simple-cabal >= 0.1.0
                      , simple-cmd >= 0.2.0
-                     , simple-cmd-args >= 0.1.2
+                     , simple-cmd-args >= 0.1.6
                      , xdg-basedir
 
   ghc-options:         -Wall
