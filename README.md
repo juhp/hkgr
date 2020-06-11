@@ -110,6 +110,17 @@ and the git tag is pushed to origin.
 
 Optionally one can publish haddock docs with `hkgr publish-haddock`.
 
+### new
+`hkgr new` creates a new project.
+
+If you don't pass a name it will try to check the current directory.
+
+It uses `cabal init` to setup various files but replaces the .cabal file
+with a template stored in `~/.config/hkgr/template.cabal` which the user
+can freely customize.
+
+A `stack.yaml` file and git repo is also set up.
+
 ## Requirements
 
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
