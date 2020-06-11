@@ -6,6 +6,7 @@ description:
             Hkgr (pronounced "Hackager") is a tool to help make new releases of
             Haskell packages, with commands for git tagging, pristine sdist,
             and uploading to Hackage.
+            There is also a command for creating a new local project.
 homepage:            https://github.com/juhp/hkgr
 bug-reports:         https://github.com/juhp/hkgr/issues
 license:             GPL-3
