@@ -6,7 +6,7 @@ module Main (main) where
 import Control.Applicative (pure, (<$>))
 #endif
 
-import Control.Exception (bracket_, onException)
+import Control.Exception (bracket_, finally, onException)
 import Control.Monad.Extra
 import Data.Char
 import Data.List.Extra
@@ -25,28 +25,31 @@ import SimpleCmdArgs
 import System.Directory
 import System.Environment.XDG.BaseDir
 import System.FilePath
+import System.IO (BufferMode(NoBuffering), hSetBuffering, hSetEcho,
+                  stdin, stdout)
 import Paths_hkgr (getDataFileName, version)
 
 main :: IO ()
-main =
+main = do
+  hSetBuffering stdout NoBuffering
   simpleCmdArgs (Just version) "Hackage Release tool"
-  "'Hackager' is a package release tool for easy Hackage workflow" $
-  subcommands
-  [ Subcommand "new" "setup a new project" $
-    newCmd <$> optional (strArg "PROJECT")
-  , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
-    tagDistCmd <$> forceOpt "Move existing tag"
-  , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
-    pure $ uploadCmd False
-  , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
-    pure $ uploadCmd True
-  , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
-    pure $ upHaddockCmd False
-  , Subcommand "publish-haddock" "Publish documentation to Hackage" $
-    pure $ upHaddockCmd True
-  , Subcommand "version" "Show the package version from .cabal file" $
-    pure showVersionCmd
-  ]
+    "'Hackager' is a package release tool for easy Hackage workflow" $
+    subcommands
+    [ Subcommand "new" "setup a new project" $
+      newCmd <$> optional (strArg "PROJECT")
+    , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
+      tagDistCmd <$> forceOpt "Move existing tag"
+    , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
+      pure $ uploadCmd False
+    , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
+      pure $ uploadCmd True
+    , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
+      pure $ upHaddockCmd False
+    , Subcommand "publish-haddock" "Publish documentation to Hackage" $
+      pure $ upHaddockCmd True
+    , Subcommand "version" "Show the package version from .cabal file" $
+      pure showVersionCmd
+    ]
   where
     forceOpt = switchWith 'f' "force"
 
@@ -140,9 +143,24 @@ uploadCmd publish = do
     branch <- cmd "git" ["branch", "--show-current"]
     git_ "push" ["origin", tagHash ++ ":" ++ branch]
     git_ "push" ["origin", tag]
-  cabal_ "upload" $ ["--publish" | publish] ++ [file]
+  username <- prompt False "Hackage username"
+  passwd <- prompt True "Hackage password"
+  void $ cmdStdIn "cabal" ("upload" : ["--publish" | publish] ++ [file]) $
+    unlines [username, passwd]
+  putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
     createFileLink (takeFileName file) (file <.> "published")
+  where
+    prompt :: Bool -> String -> IO String
+    prompt hide s = do
+      putStr $ s ++ ": "
+      inp <- if hide then withoutEcho getLine else getLine
+      when hide $ putChar '\n'
+      return inp
+      where
+        withoutEcho :: IO a -> IO a
+        withoutEcho action =
+          finally (hSetEcho stdin False >> action) (hSetEcho stdin True)
 
 upHaddockCmd :: Bool -> IO ()
 upHaddockCmd publish =
