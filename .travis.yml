@@ -11,6 +11,7 @@ cache:
   - "$HOME/.cabal"
 
 ghc:
+  - 8.10.1
   - 8.8.3
   - 8.6.5
   - 8.4.4
@@ -22,10 +23,9 @@ ghc:
 
 install:
   - cabal new-update
-  - cabal new-build
 
 script:
-  - echo 'No tests'
+  - cabal new-build
 
 notifications:
   email: false
