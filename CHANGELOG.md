@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.6 (2020-06-11)
+- tagdist: include existing tag in error message
+- experimental 'new' project command with user template file
+  `~/.config/hkgr/template.cabal`
+- switch to cabal v2-sdist
+- upload: display error correctly
+
 ## 0.2.5.2 (2020-02-29)
 - no hlint summary
 - fix published message
