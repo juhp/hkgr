@@ -292,5 +292,5 @@ newCmd mproject = do
 
 #if !MIN_VERSION_extra(1,6,15)
 fromMaybeM :: Monad m => m a -> m (Maybe a) -> m a
-fromMaybeM n = maybeM n pure
+fromMaybeM n = maybeM n return
 #endif
