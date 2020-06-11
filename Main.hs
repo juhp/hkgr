@@ -119,7 +119,9 @@ sdist force pkgid = do
       putStrLn "Running hlint"
       void $ cmdBool "hlint" ["--no-summary", "."]
     let dest = takeDirectory $ cwd </> target
-    cabal_ "v2-sdist" ["--output-dir=" ++ dest ]
+    unlessM (doesDirectoryExist dest) $
+      createDirectoryIfMissing True dest
+    cabal_ "v2-sdist" ["--output-dir=" ++ dest]
 
 showVersionCmd :: IO ()
 showVersionCmd = do
