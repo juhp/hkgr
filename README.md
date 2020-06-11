@@ -121,6 +121,8 @@ can freely customize.
 
 A `stack.yaml` file and git repo is also set up.
 
+One can use `hub create` etc to create the project on Github.
+
 ## Requirements
 
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
