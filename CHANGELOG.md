@@ -6,6 +6,7 @@
   `~/.config/hkgr/template.cabal`
 - switch to cabal v2-sdist
 - upload: display error correctly
+- upload: add --force switch - to refresh tag and tarball
 
 ## 0.2.5.2 (2020-02-29)
 - no hlint summary

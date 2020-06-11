@@ -1,4 +1,3 @@
-- update -f
 - support stack (stkgr?)
 - short help
 - check/warning about unpushed tags

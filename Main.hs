@@ -40,9 +40,9 @@ main = do
     , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
       tagDistCmd <$> forceOpt "Move existing tag"
     , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
-      pure $ uploadCmd False
+      uploadCmd False <$> forceOpt "Move existing tag"
     , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
-      pure $ uploadCmd True
+      pure $ uploadCmd True False
     , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
       pure $ upHaddockCmd False
     , Subcommand "publish-haddock" "Publish documentation to Hackage" $
@@ -131,12 +131,14 @@ showVersionCmd = do
   pkgid <- getPackageId
   putStrLn $ packageVersion pkgid
 
-uploadCmd :: Bool -> IO ()
-uploadCmd publish = do
+uploadCmd :: Bool -> Bool -> IO ()
+uploadCmd publish force = do
   pkgid <- checkPackage
   let file = sdistDir </> showPkgId pkgid <.> ".tar.gz"
   exists <- doesFileExist file
-  unless exists $ tagDistCmd False
+  if force
+    then tagDistCmd True
+    else unless exists $ tagDistCmd False
   when publish $ do
     let tag = pkgidTag pkgid
     tagHash <- cmd "git" ["rev-parse", tag]
