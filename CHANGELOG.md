@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.6.1 (2020-07-30)
+- upload: do not hide output since it conceals any error
+- new: improvements to work better with cabal-3.0 init
+
 ## 0.2.6 (2020-06-11)
 - tagdist: include existing tag in error message
 - experimental 'new' project command with user template file
