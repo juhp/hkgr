@@ -11,14 +11,13 @@ import Control.Monad.Extra
 import Data.Char
 import Data.List.Extra
 import Data.Maybe
-#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,11,0))
-#else
+#if !MIN_VERSION_base(4,11,0)
 import Data.Monoid ((<>))
 #endif
 import SimpleCabal
 import SimpleCmd
 #if MIN_VERSION_simple_cmd(0,2,1)
-  hiding (whenM)
+  hiding (ifM, whenM)
 #endif
 import SimpleCmd.Git
 import SimpleCmdArgs
@@ -211,8 +210,10 @@ newCmd mproject = do
     Nothing -> do
       let setupFile = "Setup.hs"
       origsetup <- doesFileExist setupFile
-      cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=BSD3", "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=app"]
-      sed ["/module Main where/,+1 d"] "app/Main.hs"
+      cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=BSD3", "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=src"]
+      whenJustM (cmdMaybe "find" ["-name", "Main.hs"]) $ \ file -> do
+        sed ["/module Main where/,+1 d"] file
+        unless (file == "./Main.hs") $ renameFile file "./Main.hs"
       whenM (doesFileExist "CHANGELOG.md") $
         renameFile "CHANGELOG.md" "ChangeLog.md"
       unlessM (doesFileExist "README.md") $

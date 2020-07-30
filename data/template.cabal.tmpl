@@ -22,8 +22,9 @@ source-repository head
 executable @PROJECT@
   main-is:             Main.hs
 --  other-modules:       Paths_@PROJECT_@
-  hs-source-dirs:      app
-  build-depends:       base < 5
+--  hs-source-dirs:      app
+  build-depends:       base < 5,
+                       @PROJECT@
   default-language:    Haskell2010
   ghc-options:         -Wall
   if impl(ghc >= 8.0)
