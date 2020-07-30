@@ -271,23 +271,16 @@ newCmd mproject = do
       replaceHolder "SUMMARY" (name ++ " project") $ name <.> "cabal"
       year <- cmd "date" ["+%Y"]
       replaceHolder "YEAR" year $ name <.> "cabal"
-      let moduleName = toModule name
-      replaceHolder "MODULE" moduleName $ name <.> "cabal"
-      let modulePath = "src" </> intercalate "/" (wordsBy (== '.') moduleName) <.> "hs"
-      createDirectoryIfMissing True $ takeDirectory modulePath
-      writeFile modulePath $ "module " ++ moduleName ++ " where \n"
+      let modulePath = "src/MyLib.hs"
+      unlessM (doesFileExist modulePath) $ do
+        createDirectoryIfMissing True $ takeDirectory modulePath
+        writeFile modulePath "module MyLib where \n"
       where
         replaceHolder lbl val file =
           sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"] file
 
         underscore '-' = '_'
         underscore c = c
-
-        toModule pkg =
-          let titlecase part =
-                if null part then part
-                else toUpper (head part) : tail part
-          in intercalate "." $ map titlecase $ wordsBy (== '-') pkg
 
 #if !MIN_VERSION_filepath(1,4,2)
     isExtensionOf :: String -> FilePath -> Bool
