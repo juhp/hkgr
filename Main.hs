@@ -147,8 +147,10 @@ uploadCmd publish force = do
     git_ "push" ["origin", tag]
   username <- prompt False "Hackage username"
   passwd <- prompt True "Hackage password"
-  void $ cmdStdIn "cabal" ("upload" : ["--publish" | publish] ++ [file]) $
-    unlines [username, passwd]
+  -- FIXME can fail to output error
+  out <- cmdStdIn "cabal" ("upload" : ["--publish" | publish] ++ [file]) $
+         unlines [username, passwd]
+  putStrLn out
   putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
     createFileLink (takeFileName file) (file <.> "published")
