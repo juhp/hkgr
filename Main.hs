@@ -144,8 +144,8 @@ uploadCmd publish force = do
     branch <- cmd "git" ["branch", "--show-current"]
     git_ "push" ["origin", tagHash ++ ":" ++ branch]
     git_ "push" ["origin", tag]
-  username <- prompt False "Hackage username"
-  passwd <- prompt True "Hackage password"
+  username <- prompt False "hackage.haskell.org username"
+  passwd <- prompt True "hackage.haskell.org password"
   -- FIXME can fail to output error
   out <- cmdStdIn "cabal" ("upload" : ["--publish" | publish] ++ [file]) $
          unlines [username, passwd]
