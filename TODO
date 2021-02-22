@@ -1,3 +1,14 @@
+- cannot publish if already pushed and tag not on HEAD
+
+- add or --commit (alternative to force)
+
+- do not read username/password if set in .cabal/config
+- combine upload -f and upload-haddock
+- put Main in src/
+- diff command
+- s/module Main/module Main (main)/
+- add github actions
+
 - support stack (stkgr?)
 - short help
 - check/warning about unpushed tags

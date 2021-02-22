@@ -8,6 +8,7 @@ import Control.Applicative (pure, (<$>))
 
 import Control.Exception (bracket_, finally, onException)
 import Control.Monad.Extra
+import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Char
 import Data.List.Extra
 import Data.Maybe
@@ -15,17 +16,14 @@ import Data.Maybe
 import Data.Monoid ((<>))
 #endif
 import SimpleCabal
-import SimpleCmd
-#if MIN_VERSION_simple_cmd(0,2,1)
-  hiding (ifM, whenM)
-#endif
-import SimpleCmd.Git
 import SimpleCmdArgs
 import System.Directory
 import System.Environment.XDG.BaseDir
+import System.Exit (ExitCode (..))
 import System.FilePath
 import System.IO (BufferMode(NoBuffering), hSetBuffering, hSetEcho,
                   stdin, stdout)
+import qualified System.Process.Typed as P
 import Paths_hkgr (getDataFileName, version)
 
 main :: IO ()
@@ -52,17 +50,61 @@ main = do
   where
     forceOpt = switchWith 'f' "force"
 
+git :: String -> [String] -> P.ProcessConfig () () ()
+git c args = P.proc "git" (c:args)
+
+git_ :: String -> [String] -> IO ()
+git_ c args =
+  cmd_ "git" (c:args)
+
+gitBool :: String -> [String] -> IO Bool
+gitBool c args = do
+  (== ExitSuccess) <$> P.runProcess (git c args)
+
+removeTrailingNewline :: B.ByteString -> B.ByteString
+removeTrailingNewline "" = ""
+removeTrailingNewline bs =
+  if B.last bs == '\n'
+  then B.init bs
+  else bs
+
+-- cmd :: String -> [String] -> IO String
+-- cmd c args =
+--   B.unpack . removeTrailingNewline <$> P.readProcessStdout_ (P.proc c args)
+
+cmd_ :: String -> [String] -> IO ()
+cmd_ c args = P.runProcess_ $ P.proc c args
+
+cmdOut :: P.ProcessConfig () () () -> IO String
+cmdOut p =
+  B.unpack . removeTrailingNewline <$> P.readProcessStdout_ p
+
+cmdMaybe :: P.ProcessConfig () () () -> IO (Maybe String)
+cmdMaybe p = do
+  (ret, out ,_err) <- P.readProcess p
+  return $ if ret == ExitSuccess
+           then Just (B.unpack (removeTrailingNewline out))
+           else Nothing
+
+-- from simple-cmd
+error' :: String -> a
+#if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,9,0))
+error' = errorWithoutStackTrace
+#else
+error' = error
+#endif
+
 tagDistCmd :: Bool -> IO ()
 tagDistCmd force = do
   needProgram "cabal"
-  diff <- git "diff" ["HEAD"]
+  diff <- cmdOut $ git "diff" ["HEAD"]
   unless (null diff) $ do
     putStrLn "=== start of uncommitted changes ==="
     putStrLn diff
     putStrLn "=== end of uncommitted changes ==="
   pkgid <- checkPackage
   let tag = pkgidTag pkgid
-  tagHash <- cmdMaybe "git" ["rev-parse", tag]
+  tagHash <- cmdMaybe (git "rev-parse" [tag])
   when (isJust tagHash && not force) $
     error' $ "tag " ++ tag ++ " exists: use --force to override and move"
   git_ "tag" $ ["--force" | force] ++ [tag]
@@ -79,28 +121,31 @@ pkgidTag pkgid = "v" ++ packageVersion pkgid
 checkPackage :: IO PackageIdentifier
 checkPackage = do
   pkgid <- getPackageId
-  checkVersionCommitted pkgid
+  checkNameVersionCommitted pkgid
   checkNotPublished pkgid
   return pkgid
+  where
+    checkNameVersionCommitted :: PackageIdentifier -> IO ()
+    checkNameVersionCommitted pkgid = do
+      let pkg = packageName pkgid
+          cabalfile = unPackageName pkg <.> "cabal"
+      unlessM (doesFileExist cabalfile) $
+        error' $ ".cabal filename differs from package name: " ++ unPackageName pkg
+      diff <- cmdOut (git "diff" ["-U0", "HEAD", cabalfile])
+      when ("version:" `isPrefixOf` map toLower diff) $
+        error' "Please commit or revert the package Version first"
 
-checkVersionCommitted :: PackageIdentifier -> IO ()
-checkVersionCommitted pkgid = do
-  let pkg = packageName pkgid
-  diff <- git "diff" ["-U0", "HEAD", unPackageName pkg <.> "cabal"]
-  when ("version:" `isInfixOf` map toLower diff) $
-    error' "Please commit or revert the package Version first"
-
-checkNotPublished :: PackageIdentifier -> IO ()
-checkNotPublished pkgid = do
-  let published = sdistDir </> showPkgId pkgid <.> ".tar.gz" <.> "published"
-  exists <- doesFileExist published
-  when exists $ error' $ showPkgId pkgid <> " was already published!!"
-  let oldpublished = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
-  oldExists <- doesFileExist oldpublished
-  when oldExists $ error' $ showPkgId pkgid <> " was already published!!"
+    checkNotPublished :: PackageIdentifier -> IO ()
+    checkNotPublished pkgid = do
+      let published = sdistDir </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+      exists <- doesFileExist published
+      when exists $ error' $ showPkgId pkgid <> " was already published!!"
+      let oldpublished = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+      oldExists <- doesFileExist oldpublished
+      when oldExists $ error' $ showPkgId pkgid <> " was already published!!"
 
 sdistDir :: FilePath
-sdistDir = "dist-newstyle/sdist"
+sdistDir = ".hkgr"
 
 sdist :: Bool -> PackageIdentifier -> IO ()
 sdist force pkgid = do
@@ -119,7 +164,7 @@ sdist force pkgid = do
     mhlint <- findExecutable "hlint"
     when (isJust mhlint) $ do
       putStrLn "Running hlint"
-      void $ cmdBool "hlint" ["--no-summary", "."]
+      void $ P.runProcess $ P.proc "hlint" ["--no-summary", "."]
     let dest = takeDirectory $ cwd </> target
     unlessM (doesDirectoryExist dest) $
       createDirectoryIfMissing True dest
@@ -130,44 +175,62 @@ showVersionCmd = do
   pkgid <- getPackageId
   putStrLn $ packageVersion pkgid
 
+-- FIXME cabal install creates tarballs now
 uploadCmd :: Bool -> Bool -> IO ()
 uploadCmd publish force = do
   pkgid <- checkPackage
   let file = sdistDir </> showPkgId pkgid <.> ".tar.gz"
+      tag = pkgidTag pkgid
   exists <- doesFileExist file
-  if force
-    then tagDistCmd True
-    else unless exists $ tagDistCmd False
+  when (force || not exists) $
+    tagDistCmd force
+  whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
+    error' $ tag ++ " is no longer on branch: use --force to move it"
   when publish $ do
-    let tag = pkgidTag pkgid
-    tagHash <- cmd "git" ["rev-parse", tag]
-    branch <- cmd "git" ["branch", "--show-current"]
-    git_ "push" ["origin", tagHash ++ ":" ++ branch]
+    tagHash <- cmdOut $ git "rev-parse" [tag]
+    branch <- cmdOut $ git "branch" ["--show-current"]
+    mergeable <- gitBool "merge-base" ["--is-ancestor", "HEAD", tagHash]
+    when mergeable $ do
+      putStr "git pushing... "
+      git_ "push" ["--quiet", "origin", tagHash ++ ":" ++ branch]
+      putStrLn "done"
     git_ "push" ["origin", tag]
   username <- prompt False "hackage.haskell.org username"
   passwd <- prompt True "hackage.haskell.org password"
-  -- FIXME can fail to output error
-  out <- cmdStdIn "cabal" ("upload" : ["--publish" | publish] ++ [file]) $
-         unlines [username, passwd]
-  putStrLn out
+  let userpassBS = B.pack $ unlines [username, passwd]
+  void $ P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : ["--publish" | publish] ++ [file]))
   putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
     createFileLink (takeFileName file) (file <.> "published")
+
+-- maybeGetUserPassword :: IO (Maybe String, Maybe String)
+-- maybeGetUserPassword = do
+--   muser <- maybeGetUsername
+--   mpwd <- maybeGetPassword
+--   return (muser,mpwd)
+--   where
+--     maybeGetUsername :: IO (Maybe String)
+
+prompt :: Bool -> String -> IO String
+prompt hide s = do
+  putStr $ s ++ ": "
+  inp <- if hide then withoutEcho getLine else getLine
+  when hide $ putChar '\n'
+  return inp
   where
-    prompt :: Bool -> String -> IO String
-    prompt hide s = do
-      putStr $ s ++ ": "
-      inp <- if hide then withoutEcho getLine else getLine
-      when hide $ putChar '\n'
-      return inp
-      where
-        withoutEcho :: IO a -> IO a
-        withoutEcho action =
-          finally (hSetEcho stdin False >> action) (hSetEcho stdin True)
+    withoutEcho :: IO a -> IO a
+    withoutEcho action =
+      finally (hSetEcho stdin False >> action) (hSetEcho stdin True)
 
 upHaddockCmd :: Bool -> IO ()
-upHaddockCmd publish =
-  cabal_ "upload" $ "--documentation" : ["--publish" | publish]
+upHaddockCmd publish = do
+  username <- prompt False "hackage.haskell.org username"
+  passwd <- prompt True "hackage.haskell.org password"
+  let userpassBS = B.pack $ unlines [username, passwd]
+  _out <- P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : "--documentation" : ["--publish" | publish]))
+
+  pkgid <- getPackageId
+  putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
 
 cabal_ :: String -> [String] -> IO ()
 cabal_ c args =
@@ -178,14 +241,15 @@ withTempDirectory dir run =
   bracket_ (createDirectory dir) (removeDirectoryRecursive dir) $
   withCurrentDirectory dir run
 
-#if (defined(MIN_VERSION_simple_cmd) && MIN_VERSION_simple_cmd(0,2,1))
-#else
+-- #if (defined(MIN_VERSION_simple_cmd) && MIN_VERSION_simple_cmd(0,2,1))
+-- #else
 needProgram :: String -> IO ()
 needProgram prog = do
   mx <- findExecutable prog
   unless (isJust mx) $ error' $ "program needs " ++ prog
-#endif
+-- #endif
 
+-- FIXME warning if upstream template changed (keep a versioned template copy)
 -- FIXME add default templates dir
 -- FIXME --license
 newCmd :: Maybe String -> IO ()
@@ -211,9 +275,9 @@ newCmd mproject = do
       let setupFile = "Setup.hs"
       origsetup <- doesFileExist setupFile
       cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=BSD3", "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=src"]
-      whenJustM (cmdMaybe "find" ["-name", "Main.hs"]) $ \ file -> do
-        sed ["/module Main where/,+1 d"] file
-        unless (file == "./Main.hs") $ renameFile file "./Main.hs"
+      whenJustM (cmdMaybe $ P.proc "find" ["-name", "Main.hs"]) $ \ file -> do
+        sed ["1s/^/-- SPDX-License-Identifier: BSD-3-Clause\\n\\n/"] file
+        unless (file == "src/Main.hs") $ renameFile file "src/Main.hs"
       whenM (doesFileExist "CHANGELOG.md") $
         renameFile "CHANGELOG.md" "ChangeLog.md"
       unlessM (doesFileExist "README.md") $
@@ -229,7 +293,7 @@ newCmd mproject = do
   mstack <- findExecutable "stack"
   -- FIXME add stack.yaml template too
   when (not haveStackCfg && isJust mstack) $ do
-    cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-15"]
+    cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-16"]
     sed ["/^#/d", "/^$/d"] "stack.yaml"
   haveGit <- doesDirectoryExist ".git"
   unless haveGit $ do
@@ -256,25 +320,26 @@ newCmd mproject = do
         createDirectoryIfMissing True $ takeDirectory userTemplate
         -- FIXME put a copy of the current template there too for reference
         copyFile origTemplate userTemplate
-        username <- git "config" ["--global", "user.name"]
+        username <- cmdOut $ git "config" ["--global", "user.name"]
         replaceHolder "NAME" username userTemplate
         usermail <-
-          fromMaybeM (git "config" ["--global", "user.email"]) $
-            cmdMaybe "git" ["config", "--global", "github.email"]
+          fromMaybeM (cmdOut $ git "config" ["--global", "user.email"]) $
+            cmdMaybe $ git "config" ["--global", "github.email"]
         replaceHolder "EMAIL" usermail userTemplate
-        githubuser <- git "config" ["--global", "github.user"]
+        githubuser <- cmdOut $ git "config" ["--global", "github.user"]
         replaceHolder "USER" githubuser userTemplate
         putStrLn $ userTemplate ++ " set up"
       copyFile userTemplate $ name <.> "cabal"
       replaceHolder "PROJECT" name $ name <.> "cabal"
       replaceHolder "PROJECT_" (map underscore name) $ name <.> "cabal"
       replaceHolder "SUMMARY" (name ++ " project") $ name <.> "cabal"
-      year <- cmd "date" ["+%Y"]
+      year <- cmdOut (P.proc "date" ["+%Y"])
       replaceHolder "YEAR" year $ name <.> "cabal"
       let modulePath = "src/MyLib.hs"
       unlessM (doesFileExist modulePath) $ do
         createDirectoryIfMissing True $ takeDirectory modulePath
-        writeFile modulePath "module MyLib where \n"
+        writeFile modulePath "-- SPDX-License-Identifier: BSD-3-Clause\n\nmodule MyLib where\n"
+        -- sed ["-i", "1s/^/-- SPDX-License-Identifier: BSD-3-Clause\n\n/"] modulePath
       where
         replaceHolder lbl val file =
           sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"] file
