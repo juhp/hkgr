@@ -276,7 +276,7 @@ newCmd mproject = do
       origsetup <- doesFileExist setupFile
       cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=BSD3", "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=src"]
       whenJustM (cmdMaybe $ P.proc "find" ["-name", "Main.hs"]) $ \ file -> do
-        sed ["1s/^/-- SPDX-License-Identifier: BSD-3-Clause\\n\\n/"] file
+        sed ["1s/^module Main where/-- SPDX-License-Identifier: BSD-3-Clause\\n\\nmodule Main (main) where/"] file
         unless (file == "src/Main.hs") $ renameFile file "src/Main.hs"
       whenM (doesFileExist "CHANGELOG.md") $
         renameFile "CHANGELOG.md" "ChangeLog.md"
@@ -309,6 +309,7 @@ newCmd mproject = do
         _ -> error' "More than one .cabal file found!"
 
     sed :: [String] -> FilePath -> IO ()
+    sed [] _ = error' "sed given no script"
     sed args file =
       cmd_ "sed" $ ["-i", "-e"] ++ intersperse "-e" args ++ [file]
 
