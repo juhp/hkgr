@@ -1,0 +1,3 @@
+[versions]
+# lts-12 typed-process does not have readProcessInterleaved_
+oldest = lts-13
