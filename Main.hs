@@ -160,6 +160,8 @@ sdist force pkgid = do
   withTempDirectory "tmp-sdist" $ do
     git_ "clone" ["-q", "--no-checkout", "..", "."]
     git_ "checkout" ["-q", tag]
+    whenM (doesFileExist ".gitmodules") $
+      git_ "submodule" ["update", "--init"]
     cabal_ "check" []
     mhlint <- findExecutable "hlint"
     when (isJust mhlint) $ do
