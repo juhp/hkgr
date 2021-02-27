@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.7 (2020-02-27)
+- Main.hs: explicitly export main and add SPDX-License-Identifier
+- move Main.hs to src/
+- handle git submodules (not --recursive yet)
+- use typed-process to interleave IO to display login errors
+- check name and .cabal filename consistent
+- put tarballs in .hkgr/
+- upload: error if tag no longer on branch
+- publish: only push up to tag
+
 ## 0.2.6.1 (2020-07-30)
 - upload: do not hide output since it conceals any error
 - new: improvements to work better with cabal-3.0 init
