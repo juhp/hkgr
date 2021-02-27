@@ -4,7 +4,7 @@
 - Main.hs: explicitly export main and add SPDX-License-Identifier
 - move Main.hs to src/
 - handle git submodules (not --recursive yet)
-- use typed-process to interleave IO to display login errors
+- use typed-process to interleave IO to display auth errors
 - check name and .cabal filename consistent
 - put tarballs in .hkgr/
 - upload: error if tag no longer on branch
