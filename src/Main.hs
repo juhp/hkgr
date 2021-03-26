@@ -36,6 +36,8 @@ main = do
       newCmd <$> optional (strArg "PROJECT")
     , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
       tagDistCmd <$> forceOpt "Move existing tag"
+    , Subcommand "dist" "'cabal sdist' tarball" $
+      distCmd <$> forceOpt "Recreate tarball"
     , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
       uploadCmd False <$> forceOpt "Move existing tag"
     , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
@@ -118,6 +120,21 @@ tagDistCmd force = do
     if force
       then git_ "tag" ["--force", tag, fromJust tagHash]
       else git_ "tag" ["--delete", tag]
+
+distCmd :: Bool -> IO ()
+distCmd force = do
+  needProgram "cabal"
+  diff <- cmdOut $ git "diff" ["HEAD"]
+  unless (null diff) $ do
+    putStrLn "=== start of uncommitted changes ==="
+    putStrLn diff
+    putStrLn "=== end of uncommitted changes ==="
+  pkgid <- checkPackage
+  let tag = pkgidTag pkgid
+  tagHash <- cmdMaybe (git "rev-parse" [tag])
+  when (isNothing tagHash) $
+    error' $ "tag " ++ tag ++ " do not exist"
+  sdist force pkgid
 
 pkgidTag :: PackageIdentifier -> String
 pkgidTag pkgid = "v" ++ packageVersion pkgid
