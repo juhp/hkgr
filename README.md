@@ -46,8 +46,10 @@ Preprocessing executable 'hkgr' for hkgr-0.2.5..
 Source tarball created: dist/hkgr-0.2.5.tar.gz
 ```
 
-The tarball can now be uploaded to Hackage as a candidate release:
+Alternatively if you have manually tagged the version
+with `vX.Y.Z` you can use `hkgr dist` to create a tarball.
 
+The tarball can now be uploaded to Hackage as a candidate release:
 ```
 $ hkgr upload
 
@@ -93,6 +95,10 @@ One should not be able to `tagdist` on an already published
 (ie released) version made with hkgr.
 
 If sdist fails for some reason then hkgr tries to reset the tag.
+
+### dist
+Alternatively if you have already manually tagged a release with 'v' prefix
+you can use `hkgr dist` to create a tarball.
 
 ### upload
 `hkgr upload` uploads the tarball to Hackage as a candidate release.
