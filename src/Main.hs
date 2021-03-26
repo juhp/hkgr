@@ -86,6 +86,10 @@ cmdMaybe p = do
            then Just (B.unpack (removeTrailingNewline out))
            else Nothing
 
+cmdLines :: P.ProcessConfig () () () -> IO [String]
+cmdLines p =
+  map B.unpack . B.lines <$> P.readProcessStdout_ p
+
 -- from simple-cmd
 error' :: String -> a
 #if (defined(MIN_VERSION_base) && MIN_VERSION_base(4,9,0))
@@ -188,6 +192,10 @@ uploadCmd publish force = do
     tagDistCmd force
   whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
     error' $ tag ++ " is no longer on branch: use --force to move it"
+  untagged <- cmdLines $ git "log" ["--pretty=reference", tag ++ "..HEAD"]
+  unless (null untagged) $ do
+    putStrLn "untagged newer commits:"
+    mapM_ putStrLn untagged
   when publish $ do
     tagHash <- cmdOut $ git "rev-parse" [tag]
     branch <- cmdOut $ git "branch" ["--show-current"]
