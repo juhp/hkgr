@@ -35,9 +35,9 @@ main = do
     [ Subcommand "new" "setup a new project" $
       newCmd <$> optional (strArg "PROJECT")
     , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
-      tagDistCmd <$> forceOpt "Move existing tag"
+      tagDistCmd False <$> forceOpt "Move existing tag"
     , Subcommand "dist" "'cabal sdist' tarball" $
-      distCmd <$> forceOpt "Recreate tarball"
+      tagDistCmd True <$> forceOpt "Recreate tarball"
     , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
       uploadCmd False <$> forceOpt "Move existing tag"
     , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
@@ -100,47 +100,38 @@ error' = errorWithoutStackTrace
 error' = error
 #endif
 
-tagDistCmd :: Bool -> IO ()
-tagDistCmd force = do
-  needProgram "cabal"
-  diff <- cmdOut $ git "diff" ["HEAD"]
-  unless (null diff) $ do
-    putStrLn "=== start of uncommitted changes ==="
-    putStrLn diff
-    putStrLn "=== end of uncommitted changes ==="
-  pkgid <- checkPackage
+tagDistCmd :: Bool -> Bool -> IO ()
+tagDistCmd sdistOnly force = do
+  pkgid <- checkPackage True
   let tag = pkgidTag pkgid
   tagHash <- cmdMaybe (git "rev-parse" [tag])
-  when (isJust tagHash && not force) $
-    error' $ "tag " ++ tag ++ " exists: use --force to override and move"
-  git_ "tag" $ ["--force" | force] ++ [tag]
-  unless force $ putStrLn tag
-  sdist force pkgid `onException` do
-    putStrLn "Resetting tag"
-    if force
-      then git_ "tag" ["--force", tag, fromJust tagHash]
-      else git_ "tag" ["--delete", tag]
-
-distCmd :: Bool -> IO ()
-distCmd force = do
-  needProgram "cabal"
-  diff <- cmdOut $ git "diff" ["HEAD"]
-  unless (null diff) $ do
-    putStrLn "=== start of uncommitted changes ==="
-    putStrLn diff
-    putStrLn "=== end of uncommitted changes ==="
-  pkgid <- checkPackage
-  let tag = pkgidTag pkgid
-  tagHash <- cmdMaybe (git "rev-parse" [tag])
-  when (isNothing tagHash) $
-    error' $ "tag " ++ tag ++ " do not exist"
-  sdist force pkgid
+  if sdistOnly
+    then do
+    when (isNothing tagHash) $
+      error' $ "tag " ++ tag ++ " do not exist"
+    sdist force pkgid
+    else do
+    when (isJust tagHash && not force) $
+      error' $ "tag " ++ tag ++ " exists: use --force to override and move"
+    git_ "tag" $ ["--force" | force] ++ [tag]
+    unless force $ putStrLn tag
+    sdist force pkgid `onException` do
+      putStrLn "Resetting tag"
+      if force
+        then git_ "tag" ["--force", tag, fromJust tagHash]
+        else git_ "tag" ["--delete", tag]
 
 pkgidTag :: PackageIdentifier -> String
 pkgidTag pkgid = "v" ++ packageVersion pkgid
 
-checkPackage :: IO PackageIdentifier
-checkPackage = do
+checkPackage :: Bool -> IO PackageIdentifier
+checkPackage checkDiff = do
+  when checkDiff $ do
+    diff <- cmdOut $ git "diff" ["HEAD"]
+    unless (null diff) $ do
+      putStrLn "=== start of uncommitted changes ==="
+      putStrLn diff
+      putStrLn "=== end of uncommitted changes ==="
   pkgid <- getPackageId
   checkNameVersionCommitted pkgid
   checkNotPublished pkgid
@@ -201,12 +192,13 @@ showVersionCmd = do
 -- FIXME cabal install creates tarballs now
 uploadCmd :: Bool -> Bool -> IO ()
 uploadCmd publish force = do
-  pkgid <- checkPackage
+  needProgram "cabal"
+  pkgid <- checkPackage False
   let file = sdistDir </> showPkgId pkgid <.> ".tar.gz"
       tag = pkgidTag pkgid
   exists <- doesFileExist file
   when (force || not exists) $
-    tagDistCmd force
+    tagDistCmd False force
   whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
     error' $ tag ++ " is no longer on branch: use --force to move it"
   untagged <- cmdLines $ git "log" ["--pretty=reference", tag ++ "..HEAD"]
@@ -222,9 +214,7 @@ uploadCmd publish force = do
       git_ "push" ["--quiet", "origin", tagHash ++ ":" ++ branch]
       putStrLn "done"
     git_ "push" ["origin", tag]
-  username <- prompt False "hackage.haskell.org username"
-  passwd <- prompt True "hackage.haskell.org password"
-  let userpassBS = B.pack $ unlines [username, passwd]
+  userpassBS <- getUserPassword
   void $ P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : ["--publish" | publish] ++ [file]))
   putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
@@ -237,6 +227,13 @@ uploadCmd publish force = do
 --   return (muser,mpwd)
 --   where
 --     maybeGetUsername :: IO (Maybe String)
+
+-- FIXME check if defined in .cabal/config
+getUserPassword :: IO B.ByteString
+getUserPassword = do
+  username <- prompt False "hackage.haskell.org username"
+  passwd <- prompt True "hackage.haskell.org password"
+  return $ B.pack $ unlines [username, passwd]
 
 prompt :: Bool -> String -> IO String
 prompt hide s = do
@@ -251,9 +248,8 @@ prompt hide s = do
 
 upHaddockCmd :: Bool -> IO ()
 upHaddockCmd publish = do
-  username <- prompt False "hackage.haskell.org username"
-  passwd <- prompt True "hackage.haskell.org password"
-  let userpassBS = B.pack $ unlines [username, passwd]
+  needProgram "cabal"
+  userpassBS <- getUserPassword
   _out <- P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : "--documentation" : ["--publish" | publish]))
 
   pkgid <- getPackageId
@@ -281,6 +277,7 @@ needProgram prog = do
 -- FIXME --license
 newCmd :: Maybe String -> IO ()
 newCmd mproject = do
+  needProgram "cabal"
   name <- case mproject of
     Just ns -> return ns
     Nothing -> do
