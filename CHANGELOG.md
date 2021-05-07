@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.2.8 (2020-05-07)
-'upload': show newer untagged commits
-'dist': new command for manually tagged release
+## 0.3 (2020-05-07)
+- only read Hackage username/password if not in ~/.cabal/config
+- 'upload': show newer untagged commits
+- 'dist': new command for a manually tagged release
 
 ## 0.2.7 (2020-02-27)
 - Main.hs: explicitly export main and add SPDX-License-Identifier
