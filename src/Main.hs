@@ -220,27 +220,39 @@ uploadCmd publish force = do
   when publish $
     createFileLink (takeFileName file) (file <.> "published")
 
--- maybeGetUserPassword :: IO (Maybe String, Maybe String)
--- maybeGetUserPassword = do
---   muser <- maybeGetUsername
---   mpwd <- maybeGetPassword
---   return (muser,mpwd)
---   where
---     maybeGetUsername :: IO (Maybe String)
-
--- FIXME check if defined in .cabal/config
 getUserPassword :: IO B.ByteString
 getUserPassword = do
-  username <- prompt False "hackage.haskell.org username"
-  passwd <- prompt True "hackage.haskell.org password"
-  return $ B.pack $ unlines [username, passwd]
+  cabalConfig <- do
+    home <- getHomeDirectory
+    let cabalConfig = home </> ".cabal/config"
+    exists <- doesFileExist cabalConfig
+    if exists
+      then readFile cabalConfig
+      else do
+      putStrLn $ "Warning: " ++ cabalConfig ++ " not found!"
+      return ""
+  muser <- maybeGetHackage "username" False cabalConfig
+  mpasswd <- maybeGetHackage "password" True cabalConfig
+  return $ B.pack $ unlines $ catMaybes [muser, mpasswd]
+  where
+    maybeGetHackage :: String -> Bool -> String -> IO (Maybe String)
+    maybeGetHackage field hide cabalConfig =
+      if haveCabalConfigField
+        then return Nothing
+        else Just <$> prompt hide ("hackage.haskell.org " ++ field)
+      where
+        haveCabalConfigField :: Bool
+        haveCabalConfigField =
+          any ((field ++ ":") `isPrefixOf`) (lines cabalConfig)
 
 prompt :: Bool -> String -> IO String
 prompt hide s = do
   putStr $ s ++ ": "
   inp <- if hide then withoutEcho getLine else getLine
   when hide $ putChar '\n'
-  return inp
+  if null inp
+    then prompt hide s
+    else return inp
   where
     withoutEcho :: IO a -> IO a
     withoutEcho action =

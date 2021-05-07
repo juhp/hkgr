@@ -4,7 +4,6 @@
 
 - add or --commit (alternative to force)
 
-- do not read username/password if set in .cabal/config
 - combine upload -f and upload-haddock
 - diff command
 - add github actions
