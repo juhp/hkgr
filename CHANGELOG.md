@@ -4,6 +4,7 @@
 - only read Hackage username/password if not in ~/.cabal/config
 - 'upload': show newer untagged commits
 - 'dist': new command for a manually tagged release
+- fix the check for package version committed
 
 ## 0.2.7 (2020-02-27)
 - Main.hs: explicitly export main and add SPDX-License-Identifier

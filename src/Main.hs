@@ -144,8 +144,8 @@ checkPackage checkDiff = do
       unlessM (doesFileExist cabalfile) $
         error' $ ".cabal filename differs from package name: " ++ unPackageName pkg
       diff <- cmdOut (git "diff" ["-U0", "HEAD", cabalfile])
-      when ("version:" `isPrefixOf` map toLower diff) $
-        error' "Please commit or revert the package Version first"
+      when (any ("+version:" `isPrefixOf`) (lines (map toLower diff))) $
+        error' "Please commit or revert the changed package Version first"
 
     checkNotPublished :: PackageIdentifier -> IO ()
     checkNotPublished pkgid = do
