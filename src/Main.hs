@@ -48,6 +48,8 @@ main = do
       pure $ upHaddockCmd True
     , Subcommand "version" "Show the package version from .cabal file" $
       pure showVersionCmd
+    , Subcommand "rename" "Rename the Cabal package" $
+      renameCmd <$> strArg "NEWNAME"
     ]
   where
     forceOpt = switchWith 'f' "force"
@@ -344,11 +346,6 @@ newCmd mproject = do
         [cbl] -> return $ Just (takeBaseName cbl)
         _ -> error' "More than one .cabal file found!"
 
-    sed :: [String] -> FilePath -> IO ()
-    sed [] _ = error' "sed given no script"
-    sed args file =
-      cmd_ "sed" $ ["-i", "-e"] ++ intersperse "-e" args ++ [file]
-
     setupCabalTemplate :: String -> IO ()
     setupCabalTemplate name = do
       userTemplate <- getUserConfigFile "hkgr" "template.cabal"
@@ -376,13 +373,17 @@ newCmd mproject = do
       unlessM (doesFileExist modulePath) $ do
         createDirectoryIfMissing True $ takeDirectory modulePath
         writeFile modulePath "-- SPDX-License-Identifier: BSD-3-Clause\n\nmodule MyLib where\n"
-        -- sed ["-i", "1s/^/-- SPDX-License-Identifier: BSD-3-Clause\n\n/"] modulePath
       where
         replaceHolder lbl val file =
           sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"] file
 
         underscore '-' = '_'
         underscore c = c
+
+sed :: [String] -> FilePath -> IO ()
+sed [] _ = error' "sed given no script"
+sed args file =
+  cmd_ "sed" $ ["-i", "-e"] ++ intersperse "-e" args ++ [file]
 
 #if !MIN_VERSION_filepath(1,4,2)
     isExtensionOf :: String -> FilePath -> Bool
@@ -394,3 +395,11 @@ newCmd mproject = do
 fromMaybeM :: Monad m => m a -> m (Maybe a) -> m a
 fromMaybeM n = maybeM n return
 #endif
+
+renameCmd :: String -> IO ()
+renameCmd newname = do
+  pkgid <- getPackageId
+  let oldname = unPackageName (pkgName pkgid)
+  sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] $ oldname <.> "cabal"
+  renameFile (oldname <.> "cabal") (newname <.> "cabal")
+  -- FIXME adjust README
