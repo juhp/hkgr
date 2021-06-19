@@ -300,7 +300,7 @@ newCmd mproject = do
         else do
         -- filter out dirs
         dirs <- filterM doesDirectoryExist files
-        if dirs == files then error' "Could not guess name"
+        if dirs == files then error' "Could not guess name: subdirectories found"
           else
           case filter ("cabal" `isExtensionOf`) $ files \\ dirs of
             [] -> takeFileName <$> getCurrentDirectory
