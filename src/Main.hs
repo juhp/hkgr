@@ -386,9 +386,9 @@ sed args file =
   cmd_ "sed" $ ["-i", "-e"] ++ intersperse "-e" args ++ [file]
 
 #if !MIN_VERSION_filepath(1,4,2)
-    isExtensionOf :: String -> FilePath -> Bool
-    isExtensionOf ext@('.':_) = isSuffixOf ext . takeExtensions
-    isExtensionOf ext         = isSuffixOf ('.':ext) . takeExtensions
+isExtensionOf :: String -> FilePath -> Bool
+isExtensionOf ext@('.':_) = isSuffixOf ext . takeExtensions
+isExtensionOf ext         = isSuffixOf ('.':ext) . takeExtensions
 #endif
 
 #if !MIN_VERSION_extra(1,6,15)
