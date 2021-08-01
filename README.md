@@ -106,6 +106,9 @@ Like `hkgr tagdist -f`, this can be repeated.
 
 Haddock draft documentation can also be uploaded if desired with `hkgr upload-haddock`.
 
+If you have an existing version tag (starting with `v`) you can use
+the `--existing-tag` option to skip the tagging step (like `dist` does).
+
 ### publish
 `hkgr publish` releases the tarball to Hackage.
 
@@ -130,5 +133,4 @@ A `stack.yaml` file and git repo is also set up.
 One can use `hub create` etc to create the project on Github.
 
 ## Requirements
-
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
