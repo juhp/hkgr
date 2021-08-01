@@ -36,12 +36,12 @@ main = do
       newCmd <$> optional (strArg "PROJECT")
     , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
       tagDistCmd False <$> forceOpt "Move existing tag"
-    , Subcommand "dist" "'cabal sdist' tarball" $
+    , Subcommand "dist" "'cabal sdist' tarball for existing tag" $
       tagDistCmd True <$> forceOpt "Recreate tarball"
     , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
-      uploadCmd False <$> forceOpt "Move existing tag"
+      uploadCmd False <$> switchWith 'T' "existing-tag" "Use existing tag to create tarball" <*> forceOpt "Move existing tag"
     , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
-      pure $ uploadCmd True False
+      pure $ uploadCmd True False False
     , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
       pure $ upHaddockCmd False
     , Subcommand "publish-haddock" "Publish documentation to Hackage" $
@@ -103,11 +103,11 @@ error' = error
 #endif
 
 tagDistCmd :: Bool -> Bool -> IO ()
-tagDistCmd sdistOnly force = do
+tagDistCmd existingtag force = do
   pkgid <- checkPackage True
   let tag = pkgidTag pkgid
   tagHash <- cmdMaybe (git "rev-parse" [tag])
-  if sdistOnly
+  if existingtag
     then do
     when (isNothing tagHash) $
       error' $ "tag " ++ tag ++ " do not exist"
@@ -192,15 +192,15 @@ showVersionCmd = do
   putStrLn $ packageVersion pkgid
 
 -- FIXME cabal install creates tarballs now
-uploadCmd :: Bool -> Bool -> IO ()
-uploadCmd publish force = do
+uploadCmd :: Bool -> Bool -> Bool -> IO ()
+uploadCmd publish existingtag force = do
   needProgram "cabal"
   pkgid <- checkPackage False
   let file = sdistDir </> showPkgId pkgid <.> ".tar.gz"
       tag = pkgidTag pkgid
   exists <- doesFileExist file
   when (force || not exists) $
-    tagDistCmd False force
+    tagDistCmd existingtag force
   whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
     error' $ tag ++ " is no longer on branch: use --force to move it"
   untagged <- cmdLines $ git "log" ["--pretty=reference", tag ++ "..HEAD"]
