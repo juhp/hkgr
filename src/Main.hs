@@ -33,13 +33,16 @@ main = do
     "'Hackager' is a package release tool for easy Hackage workflow" $
     subcommands
     [ Subcommand "new" "setup a new project" $
-      newCmd <$> optional (strArg "PROJECT")
+      newCmd
+      <$> optional (strArg "PROJECT")
     , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
-      tagDistCmd False <$> forceOpt "Move existing tag"
-    , Subcommand "dist" "'cabal sdist' tarball for existing tag" $
-      tagDistCmd True <$> forceOpt "Recreate tarball"
+      tagDistCmd
+      <$> existingTag
+      <*> forceOpt "Move existing tag"
     , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
-      uploadCmd False <$> switchWith 'T' "existing-tag" "Use existing tag to create tarball" <*> forceOpt "Move existing tag"
+      uploadCmd False
+      <$> existingTag
+      <*> forceOpt "Move existing tag"
     , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
       pure $ uploadCmd True False False
     , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
@@ -49,10 +52,14 @@ main = do
     , Subcommand "version" "Show the package version from .cabal file" $
       pure showVersionCmd
     , Subcommand "rename" "Rename the Cabal package" $
-      renameCmd <$> strArg "NEWNAME"
+      renameCmd
+      <$> strArg "NEWNAME"
     ]
   where
     forceOpt = switchWith 'f' "force"
+
+    existingTag =
+      switchWith 'T' "existing-tag" "Use existing tag to create tarball"
 
 git :: String -> [String] -> P.ProcessConfig () () ()
 git c args = P.proc "git" (c:args)

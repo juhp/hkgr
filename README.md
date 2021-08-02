@@ -96,9 +96,8 @@ One should not be able to `tagdist` on an already published
 
 If sdist fails for some reason then hkgr tries to reset the tag.
 
-### dist
 Alternatively if you have already manually tagged a release with 'v' prefix
-you can use `hkgr dist` to create a tarball.
+you can use `--existing-tag` to create a dist tarball.
 
 ### upload
 `hkgr upload` uploads the tarball to Hackage as a candidate release.

@@ -1,7 +1,8 @@
 # Changelog
 
-## 0.3.1 (2021-08-01)
+## 0.3.1 (2021-08-02)
 - template.cabal: use cabal 2.0 and define hs-source-dirs
+- 'tagdist --existing-tag' replaces 'dist' command
 - 'upload': add --existing-tag for dist rather than tagdist
 - 'new': stack init with lts-17
 - 'rename': experimental command to rename a project
