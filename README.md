@@ -46,8 +46,8 @@ Preprocessing executable 'hkgr' for hkgr-0.2.5..
 Source tarball created: dist/hkgr-0.2.5.tar.gz
 ```
 
-Alternatively if you have manually tagged the version
-with `vX.Y.Z` you can use `hkgr dist` to create a tarball.
+Alternatively if you had manually tagged the release with `v0.2.5`
+you can use `hkgr tagdist --existing-tag` to create a dist tarball.
 
 The tarball can now be uploaded to Hackage as a candidate release:
 ```
@@ -106,7 +106,7 @@ Like `hkgr tagdist -f`, this can be repeated.
 Haddock draft documentation can also be uploaded if desired with `hkgr upload-haddock`.
 
 If you have an existing version tag (starting with `v`) you can use
-the `--existing-tag` option to skip the tagging step (like `dist` does).
+the `--existing-tag` option to skip the tagging step (like for `tagdist`).
 
 ### publish
 `hkgr publish` releases the tarball to Hackage.
