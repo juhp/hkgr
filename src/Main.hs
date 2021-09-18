@@ -109,6 +109,9 @@ error' = errorWithoutStackTrace
 error' = error
 #endif
 
+tarGzExt :: String
+tarGzExt = "tar.gz"
+
 tagDistCmd :: Bool -> Bool -> IO ()
 tagDistCmd existingtag force = do
   pkgid <- checkPackage True
@@ -158,10 +161,10 @@ checkPackage checkDiff = do
 
     checkNotPublished :: PackageIdentifier -> IO ()
     checkNotPublished pkgid = do
-      let published = sdistDir </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+      let published = sdistDir </> showPkgId pkgid <.> tarGzExt <.> "published"
       exists <- doesFileExist published
       when exists $ error' $ showPkgId pkgid <> " was already published!!"
-      let oldpublished = "dist" </> showPkgId pkgid <.> ".tar.gz" <.> "published"
+      let oldpublished = "dist" </> showPkgId pkgid <.> tarGzExt <.> "published"
       oldExists <- doesFileExist oldpublished
       when oldExists $ error' $ showPkgId pkgid <> " was already published!!"
 
@@ -171,7 +174,7 @@ sdistDir = ".hkgr"
 sdist :: Bool -> PackageIdentifier -> IO ()
 sdist force pkgid = do
   let tag = pkgidTag pkgid
-  let target = sdistDir </> showPkgId pkgid <.> ".tar.gz"
+  let target = sdistDir </> showPkgId pkgid <.> tarGzExt
   haveTarget <- doesFileExist target
   when haveTarget $
     if force
@@ -203,9 +206,9 @@ uploadCmd :: Bool -> Bool -> Bool -> IO ()
 uploadCmd publish existingtag force = do
   needProgram "cabal"
   pkgid <- checkPackage False
-  let file = sdistDir </> showPkgId pkgid <.> ".tar.gz"
+  let tarball = sdistDir </> showPkgId pkgid <.> tarGzExt
       tag = pkgidTag pkgid
-  exists <- doesFileExist file
+  exists <- doesFileExist tarball
   when (force || not exists) $
     tagDistCmd existingtag force
   whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
@@ -224,10 +227,10 @@ uploadCmd publish existingtag force = do
       putStrLn "done"
     git_ "push" ["origin", tag]
   userpassBS <- getUserPassword
-  void $ P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : ["--publish" | publish] ++ [file]))
+  void $ P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : ["--publish" | publish] ++ [tarball]))
   putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
-    createFileLink (takeFileName file) (file <.> "published")
+    createFileLink (takeFileName tarball) (tarball <.> "published")
 
 getUserPassword :: IO B.ByteString
 getUserPassword = do
