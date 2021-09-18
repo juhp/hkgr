@@ -121,23 +121,32 @@ tagDistCmd :: Bool -> Bool -> IO ()
 tagDistCmd existingtag force = do
   pkgid <- checkPackage True
   let tag = pkgidTag pkgid
-  tagHash <- cmdMaybe (git "rev-parse" [tag])
+  mtagHash <- cmdMaybe (git "rev-parse" [tag])
   unless force $ assertTagOnBranch tag
   if existingtag
-    then do
-    when (isNothing tagHash) $
-      error' $ "tag " ++ tag ++ " do not exist"
-    sdist force pkgid
+    then if isNothing mtagHash
+         then error' $ "tag " ++ tag ++ " does not exist"
+         else sdist force pkgid
     else do
-    when (isJust tagHash && not force) $
-      error' $ "tag " ++ tag ++ " exists: use --force to override and move"
-    git_ "tag" $ ["--force" | force] ++ [tag]
-    unless force $ putStrLn tag
-    sdist force pkgid `onException` do
-      putStrLn "Resetting tag"
-      if force
-        then git_ "tag" ["--force", tag, fromJust tagHash]
-        else git_ "tag" ["--delete", tag]
+    if isJust mtagHash && not force
+      then do
+      headHash <- cmdOut (git "rev-parse" ["HEAD"])
+      let onHead = Just headHash == mtagHash
+      putStrLn $ "tag is " ++ (if onHead then "" else "not ") ++ "on HEAD"
+      let tarball = sdistDir </> showPkgId pkgid <.> tarGzExt
+      exists <- doesFileExist tarball
+      if exists
+        then error' $ "tag " ++ tag ++ " exists: use --force to " ++
+             (if exists then "override tarball and " else "") ++ "move"
+        else sdist force pkgid
+      else do
+      git_ "tag" $ ["--force" | force] ++ [tag]
+      unless force $ putStrLn tag
+      sdist force pkgid `onException` do
+        putStrLn "Resetting tag"
+        if force
+          then git_ "tag" ["--force", tag, fromJust mtagHash]
+          else git_ "tag" ["--delete", tag]
 
 pkgidTag :: PackageIdentifier -> String
 pkgidTag pkgid = "v" ++ packageVersion pkgid
