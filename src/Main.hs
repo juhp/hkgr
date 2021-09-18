@@ -112,6 +112,11 @@ error' = error
 tarGzExt :: String
 tarGzExt = "tar.gz"
 
+assertTagOnBranch :: String -> IO ()
+assertTagOnBranch tag =
+    whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
+    error' $ tag ++ " is no longer on branch: use --force to move it"
+
 tagDistCmd :: Bool -> Bool -> IO ()
 tagDistCmd existingtag force = do
   pkgid <- checkPackage True
@@ -211,8 +216,7 @@ uploadCmd publish existingtag force = do
   exists <- doesFileExist tarball
   when (force || not exists) $
     tagDistCmd existingtag force
-  whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
-    error' $ tag ++ " is no longer on branch: use --force to move it"
+  assertTagOnBranch tag
   untagged <- cmdLines $ git "log" ["--pretty=reference", tag ++ "..HEAD"]
   unless (null untagged) $ do
     putStrLn "untagged newer commits:"
