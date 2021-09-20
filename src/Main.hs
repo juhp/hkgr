@@ -122,7 +122,7 @@ tagDistCmd existingtag force = do
   pkgid <- checkPackage True
   let tag = pkgidTag pkgid
   mtagHash <- cmdMaybe (git "rev-parse" [tag])
-  unless force $ assertTagOnBranch tag
+  when (not force && isJust mtagHash) $ assertTagOnBranch tag
   if existingtag
     then if isNothing mtagHash
          then error' $ "tag " ++ tag ++ " does not exist"
