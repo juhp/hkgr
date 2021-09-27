@@ -6,6 +6,8 @@
 - 'upload': add --existing-tag for dist rather than tagdist
 - 'new': stack init with lts-17
 - 'rename': experimental command to rename a project
+- add '--no-hlint' option to skip running hlint
+  (also hlint is no longer run for 'publish')
 
 ## 0.3 (2020-05-07)
 - only read Hackage username/password if not in ~/.cabal/config
