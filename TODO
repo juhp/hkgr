@@ -6,7 +6,7 @@
 
 - combine upload -f and upload-haddock
 - diff command
-- add github actions
+* add github actions
 
 - support stack (stkgr?)
 - short help

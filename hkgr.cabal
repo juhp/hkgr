@@ -11,9 +11,9 @@ homepage:            https://github.com/juhp/hkgr
 bug-reports:         https://github.com/juhp/hkgr/issues
 license:             GPL-3
 license-file:        LICENSE
-author:              Jens Petersen
-maintainer:          juhpetersen@gmail.com
-copyright:           2019-2021  Jens Petersen
+author:              Jens Petersen <juhpetersen@gmail.com>
+maintainer:          Jens Petersen <juhpetersen@gmail.com>
+copyright:           2019-2022  Jens Petersen
 category:            Util
 build-type:          Simple
 data-dir:            data

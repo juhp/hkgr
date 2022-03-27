@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4 (2021-08-02)
+## 0.4 (2022-03-27)
 - template.cabal: use cabal 2.0 and define hs-source-dirs
 - 'tagdist --existing-tag' replaces 'dist' command
 - 'upload': add --existing-tag for dist rather than tagdist

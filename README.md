@@ -7,7 +7,7 @@
 `hkgr` (pronounced "hackager") is a tool for making releases of
 Haskell packages on Hackage.
 
-It uses a cautious stepped approach to releases.
+It uses a cautious stepped iterative approach to releases.
 
 ## Example usage
 
@@ -57,8 +57,13 @@ Uploaded to https://hackage.haskell.org/package/hkgr-0.2.5/candidate
 ```
 
 One can continue to `tagdist -f` and `upload` until
-everything looks good and CI passed etc,
-then it is time to push the final tag and publish the release:
+everything looks good and CI passed etc.
+
+Note that `tagdist -f` and `upload`, can be combined as `upload -f`.
+If one wants to check the candidate upload quickly,
+it is faster just to run `upload` followed by `upload -f` if needed.
+
+Then it is time to push the final tag and publish the release:
 
 ```
 $ hkgr publish
@@ -101,9 +106,10 @@ you can use `--existing-tag` to create a dist tarball.
 
 ### upload
 `hkgr upload` uploads the tarball to Hackage as a candidate release.
-Like `hkgr tagdist -f`, this can be repeated.
+Like `hkgr tagdist -f`, `hkgr upload -f` can be repeated.
 
-Haddock draft documentation can also be uploaded if desired with `hkgr upload-haddock`.
+Haddock draft documentation can also be uploaded once if desired
+with `hkgr upload-haddock`.
 
 If you have an existing version tag (starting with `v`) you can use
 the `--existing-tag` option to skip the tagging step (like for `tagdist`).
@@ -129,7 +135,7 @@ can freely customize.
 
 A `stack.yaml` file and git repo is also set up.
 
-One can use `hub create` etc to create the project on Github.
+One can use `gh repo create` etc to create the project repo on Github.
 
 ## Requirements
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
