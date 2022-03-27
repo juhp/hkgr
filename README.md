@@ -15,64 +15,55 @@ Here is an example of doing a release of hkgr itself.
 
 After committing the latest changes for the release, create a tag and tarball:
 
-```
+```shellsession
 $ hkgr tagdist
-v0.2.5
+v0.4
 No errors or warnings could be found in the package.
 Running hlint
-./Main.hs:107:28: Warning: Redundant do
+src/Main.hs:(407,9)-(408,55): Warning: Eta reduce
 Found:
-  do void $ cmdBool "hlint" ["."]
+  replaceHolder lbl val file
+    = sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"] file
 Perhaps:
-  void $ cmdBool "hlint" ["."]
-Resolving dependencies...
-Configuring hkgr-0.2.5...
-Building source dist for hkgr-0.2.5...
-Preprocessing executable 'hkgr' for hkgr-0.2.5..
-Source tarball created: dist/hkgr-0.2.5.tar.gz
+  replaceHolder lbl val = sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"]
+
+[]
+["src/Main.hs","data/template.cabal.tmpl","README.md","CHANGELOG.md","LICENSE","hkgr.cabal"]
+[(NoExec,"CHANGELOG.md"),(NoExec,"LICENSE"),(NoExec,"README.md"),(NoExec,"data/template.cabal.tmpl"),(NoExec,"hkgr.cabal"),(NoExec,"src/Main.hs")]
+Wrote tarball sdist to /var/home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
 ```
 
-After fixing up, retag a new tarball:
+After fixing up, retag a new tarball and upload candidate:
 
-```
-$ hkgr tagdist -f
-Updated tag 'v0.2.5' (was 55b69db)
+```shellsession
+$ hkgr upload -f
+Updated tag 'v0.4' (was f6d72ba)
 No errors or warnings could be found in the package.
 Running hlint
-Resolving dependencies...
-Configuring hkgr-0.2.5...
-Building source dist for hkgr-0.2.5...
-Preprocessing executable 'hkgr' for hkgr-0.2.5..
-Source tarball created: dist/hkgr-0.2.5.tar.gz
+[]
+["src/Main.hs","data/template.cabal.tmpl","README.md","CHANGELOG.md","LICENSE","hkgr.cabal"]
+[(NoExec,"CHANGELOG.md"),(NoExec,"LICENSE"),(NoExec,"README.md"),(NoExec,"data/template.cabal.tmpl"),(NoExec,"hkgr.cabal"),(NoExec,"src/Main.hs")]
+Wrote tarball sdist to /var/home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
+hackage.haskell.org password:
+Uploaded to https://hackage.haskell.org/package/hkgr-0.4/candidate
 ```
 
-Alternatively if you had manually tagged the release with `v0.2.5`
+Alternatively if you had manually tagged the release with `v0.4`
 you can use `hkgr tagdist --existing-tag` to create a dist tarball.
 
-The tarball can now be uploaded to Hackage as a candidate release:
-```
-$ hkgr upload
-
-Uploaded to https://hackage.haskell.org/package/hkgr-0.2.5/candidate
-```
-
-One can continue to `tagdist -f` and `upload` until
+One can continue to `tagdist -f` and/or `upload -f` until
 everything looks good and CI passed etc.
-
-Note that `tagdist -f` and `upload`, can be combined as `upload -f`.
-If one wants to check the candidate upload quickly,
-it is faster just to run `upload` followed by `upload -f` if needed.
 
 Then it is time to push the final tag and publish the release:
 
-```
+```shellsession
 $ hkgr publish
-Everything up-to-date
-Total 0 (delta 0), reused 0 (delta 0)
+git pushing... done
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0
 To github.com:juhp/hkgr.git
- * [new tag]         v0.2.5 -> v0.2.5
-
-Published at https://hackage.haskell.org/package/hkgr-0.2.5
+ * [new tag]         v0.4 -> v0.4
+hackage.haskell.org password:
+Published at https://hackage.haskell.org/package/hkgr-0.4
 ```
 
 ## Details
