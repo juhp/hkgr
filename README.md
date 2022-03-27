@@ -33,7 +33,8 @@ Perhaps:
 Wrote tarball sdist to /var/home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
 ```
 
-After fixing up, retag a new tarball and upload candidate:
+After fixing up, retag a new tarball with `--force` and upload candidate,
+in one go:
 
 ```shellsession
 $ hkgr upload -f
@@ -88,7 +89,7 @@ otherwise `tagdist` refuses to run again to prevent accidently overwriting
 the tag and dist tarball.
 
 One should not be able to `tagdist` on an already published
-(ie released) version made with hkgr.
+(ie released) version made with hkgr, before the version is bumped.
 
 If sdist fails for some reason then hkgr tries to reset the tag.
 
