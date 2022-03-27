@@ -404,8 +404,8 @@ newCmd mproject = do
         createDirectoryIfMissing True $ takeDirectory modulePath
         writeFile modulePath "-- SPDX-License-Identifier: BSD-3-Clause\n\nmodule MyLib where\n"
       where
-        replaceHolder lbl val file =
-          sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"] file
+        replaceHolder lbl val =
+          sed ["s/@" ++ lbl ++ "@/" ++ val ++ "/"]
 
         underscore '-' = '_'
         underscore c = c
