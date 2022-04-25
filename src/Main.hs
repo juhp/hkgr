@@ -430,6 +430,9 @@ renameCmd :: String -> IO ()
 renameCmd newname = do
   pkgid <- getPackageId
   let oldname = unPackageName (pkgName pkgid)
-  sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] $ oldname <.> "cabal"
-  renameFile (oldname <.> "cabal") (newname <.> "cabal")
-  -- FIXME adjust README
+  sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g", "s/Paths_" ++ replace "-" "_" oldname ++ "/Paths_" ++ replace "-" "_" newname ++ "/g"] $ oldname <.> "cabal"
+  git_ "mv" [oldname <.> "cabal", newname <.> "cabal"]
+  -- FIXME for all *.hs
+  sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g", "s/Paths_" ++ replace "-" "_" oldname ++ "/Paths_" ++ replace "-" "_" newname ++ "/g"] $ "src/Main.hs"
+  sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] "README.md"
+  sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] "ChangeLog.md"
