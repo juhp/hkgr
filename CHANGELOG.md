@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 (2022-06-23)
+- 'rename' improvements
+- 'new': avoid error on cabal >= 3.4 by not passing --license to cabal init
+
 ## 0.4 (2022-03-27)
 - template.cabal: use cabal 2.0 and define hs-source-dirs
 - 'tagdist --existing-tag' replaces 'dist' command
