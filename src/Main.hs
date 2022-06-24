@@ -15,6 +15,7 @@ import Data.Maybe
 #if !MIN_VERSION_base(4,11,0)
 import Data.Monoid ((<>))
 #endif
+import Data.Version.Extra
 import SimpleCabal
 import SimpleCmdArgs
 import System.Directory
@@ -84,9 +85,9 @@ removeTrailingNewline bs =
   then B.init bs
   else bs
 
--- cmd :: String -> [String] -> IO String
--- cmd c args =
---   B.unpack . removeTrailingNewline <$> P.readProcessStdout_ (P.proc c args)
+cmd :: String -> [String] -> IO String
+cmd c args =
+  B.unpack . removeTrailingNewline <$> P.readProcessStdout_ (P.proc c args)
 
 cmd_ :: String -> [String] -> IO ()
 cmd_ c args = P.runProcess_ $ P.proc c args
@@ -342,7 +343,11 @@ newCmd mproject = do
     Nothing -> do
       let setupFile = "Setup.hs"
       origsetup <- doesFileExist setupFile
-      cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=src"]
+      cabalversion <- readVersion <$> cmd "cabal" ["--numeric-version"]
+      let license = if cabalversion > makeVersion [3,4]
+                    then "BSD-3-Clause"
+                    else "BSD3"
+        in cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=" ++ license, "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=src"]
       whenJustM (cmdMaybe $ P.proc "find" ["-name", "Main.hs"]) $ \ file -> do
         sed ["1s/^module Main where/-- SPDX-License-Identifier: BSD-3-Clause\\n\\nmodule Main (main) where/"] file
         unless (file == "src/Main.hs") $ renameFile file "src/Main.hs"

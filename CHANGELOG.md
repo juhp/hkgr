@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.2 (2022-06-24)
+- 'new': need cabal init --license, otherwise no LICENSE file is created
+
 ## 0.4.1 (2022-06-23)
 - 'rename' improvements
 - 'new': avoid error on cabal >= 3.4 by not passing --license to cabal init
