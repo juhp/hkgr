@@ -1,7 +1,8 @@
 # Changelog
 
 ## 0.4.2 (2022-06-24)
-- 'new': need cabal init --license, otherwise no LICENSE file is created
+- 'new': need cabal init --license option, otherwise no LICENSE file is created
+- 'github': new command to add github remote for project
 
 ## 0.4.1 (2022-06-23)
 - 'rename' improvements

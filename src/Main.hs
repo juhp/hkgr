@@ -57,6 +57,8 @@ main = do
     , Subcommand "rename" "Rename the Cabal package" $
       renameCmd
       <$> strArg "NEWNAME"
+    , Subcommand "github" "Add github repo" $
+      pure githubCmd
     ]
   where
     forceOpt = switchWith 'f' "force"
@@ -442,3 +444,12 @@ renameCmd newname = do
   sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] "README.md"
   sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] "ChangeLog.md"
   renameDirectory (".." </> oldname) (".." </> newname)
+
+githubCmd :: IO ()
+githubCmd = do
+  ghuser <- cmdOut $ git "config" ["--global", "github.user"]
+  pkgid <- getPackageId
+  let name = unPackageName (pkgName pkgid)
+  git_ "remote" ["add", "origin", "git@github.com:" ++ ghuser </> name <.> "git"]
+  git_ "branch" ["-M", "main"]
+--  git_ "push" ["-u", "origin", "main"]

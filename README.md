@@ -67,6 +67,33 @@ hackage.haskell.org password:
 Published at https://hackage.haskell.org/package/hkgr-0.4
 ```
 
+## Help
+
+```shellsession
+$ hkgr --version
+0.4.2
+$ hkgr --help
+Hackage Release tool
+
+Usage: hkgr [--version] COMMAND
+  'Hackager' is a package release tool for easy Hackage workflow
+
+Available options:
+  -h,--help                Show this help text
+  --version                Show version
+
+Available commands:
+  new                      setup a new project
+  tagdist                  'git tag' version and 'cabal sdist' tarball
+  upload                   'cabal upload' candidate tarball to Hackage
+  publish                  Publish to Hackage ('cabal upload --publish')
+  upload-haddock           Upload candidate documentation to Hackage
+  publish-haddock          Publish documentation to Hackage
+  version                  Show the package version from .cabal file
+  rename                   Rename the Cabal package
+  github                   Add github repo
+```
+
 ## Details
 
 ### tagdist
@@ -127,7 +154,9 @@ can freely customize.
 
 A `stack.yaml` file and git repo is also set up.
 
-One can use `gh repo create` etc to create the project repo on Github.
+### github
+(One can use `gh repo create` etc to create the project repo on Github)
+and then `hkgr github` to add the github remote to your project.
 
 ## Requirements
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
