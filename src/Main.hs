@@ -238,7 +238,8 @@ uploadCmd publish existingtag force noHlint = do
   assertTagOnBranch tag
   untagged <- cmdLines $ git "log" ["--pretty=reference", tag ++ "..HEAD"]
   unless (null untagged) $ do
-    putStrLn "untagged newer commits:"
+    putStrLn $ "untagged newer commit" ++
+      (if length untagged > 1 then "s" else "") ++ ":"
     mapM_ putStrLn untagged
   when publish $ do
     tagHash <- cmdOut $ git "rev-parse" [tag]
