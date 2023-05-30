@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.3 (2023-05-30)
+- bump template to Cabal 2.2
+- add pristine 'build' command: used before publish
+- use haskeline for reading user/passwd via simple-prompt
+
 ## 0.4.2 (2022-06-24)
 - 'new': need cabal init --license option, otherwise no LICENSE file is created
 - 'github': new command to add github remote for project
@@ -93,4 +98,4 @@
 - push tag after publishing
 
 ## 0.0 (2019-06-08)
-* Initially created.
+- Initially created.

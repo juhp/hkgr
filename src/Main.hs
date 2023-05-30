@@ -432,6 +432,7 @@ fromMaybeM :: Monad m => m a -> m (Maybe a) -> m a
 fromMaybeM n = maybeM n return
 #endif
 
+-- FIXME rename github remote too?
 renameCmd :: String -> IO ()
 renameCmd newname = do
   pkgid <- getPackageId

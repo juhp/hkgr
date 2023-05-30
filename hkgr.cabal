@@ -1,6 +1,6 @@
 cabal-version:       2.0
 name:                hkgr
-version:             0.4.2
+version:             0.4.3
 synopsis:            Simple Hackage release workflow for package maintainers
 description:
             Hkgr (Hackager) is a tool to help make new releases of
@@ -13,15 +13,15 @@ license:             GPL-3
 license-file:        LICENSE
 author:              Jens Petersen <juhpetersen@gmail.com>
 maintainer:          Jens Petersen <juhpetersen@gmail.com>
-copyright:           2019-2022  Jens Petersen
+copyright:           2019-2023  Jens Petersen
 category:            Util
 build-type:          Simple
 data-dir:            data
 data-files:          template.cabal.tmpl
 extra-doc-files:     README.md
                    , CHANGELOG.md
-tested-with:         GHC == 8.10.7, GHC == 8.8.4, GHC == 8.6.5, GHC == 8.4.4,
-                     GHC == 8.2.2, GHC == 8.0.2
+tested-with:         GHC == 9.6 || == 9.4 || == 9.2 || == 9.0 || == 8.10
+                     || == 8.8 || == 8.6 || == 8.4 || == 8.2 || == 8.0
 
 source-repository head
   type:                git

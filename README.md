@@ -30,7 +30,7 @@ Perhaps:
 []
 ["src/Main.hs","data/template.cabal.tmpl","README.md","CHANGELOG.md","LICENSE","hkgr.cabal"]
 [(NoExec,"CHANGELOG.md"),(NoExec,"LICENSE"),(NoExec,"README.md"),(NoExec,"data/template.cabal.tmpl"),(NoExec,"hkgr.cabal"),(NoExec,"src/Main.hs")]
-Wrote tarball sdist to /var/home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
+Wrote tarball sdist to /home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
 ```
 
 After fixing up, retag a new tarball with `--force` and upload candidate,
@@ -44,7 +44,7 @@ Running hlint
 []
 ["src/Main.hs","data/template.cabal.tmpl","README.md","CHANGELOG.md","LICENSE","hkgr.cabal"]
 [(NoExec,"CHANGELOG.md"),(NoExec,"LICENSE"),(NoExec,"README.md"),(NoExec,"data/template.cabal.tmpl"),(NoExec,"hkgr.cabal"),(NoExec,"src/Main.hs")]
-Wrote tarball sdist to /var/home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
+Wrote tarball sdist to /home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
 hackage.haskell.org password:
 Uploaded to https://hackage.haskell.org/package/hkgr-0.4/candidate
 ```
@@ -71,11 +71,12 @@ Published at https://hackage.haskell.org/package/hkgr-0.4
 
 ```shellsession
 $ hkgr --version
-0.4.2
+0.4.3
 $ hkgr --help
 Hackage Release tool
 
 Usage: hkgr [--version] COMMAND
+
   'Hackager' is a package release tool for easy Hackage workflow
 
 Available options:
@@ -89,6 +90,7 @@ Available commands:
   publish                  Publish to Hackage ('cabal upload --publish')
   upload-haddock           Upload candidate documentation to Hackage
   publish-haddock          Publish documentation to Hackage
+  build                    Do a local pristine build from the tarball
   version                  Show the package version from .cabal file
   rename                   Rename the Cabal package
   github                   Add github repo
@@ -134,14 +136,19 @@ If you have an existing version tag (starting with `v`) you can use
 the `--existing-tag` option to skip the tagging step (like for `tagdist`).
 
 ### publish
-`hkgr publish` releases the tarball to Hackage.
+`hkgr publish` releases the tarball to Hackage, after doing a pristine
+local build and git pushing the tag and its commits to origin.
 
-If it succeeds then hkgr creates a "published lockfile" in `dist/`,
-and the git tag is pushed to origin.
+If it succeeds, then hkgr creates a "published lockfile" in `.hkgr/`.
 
 (Then hkgr will refuse to do further commands on the released version.)
 
 Optionally one can publish haddock docs with `hkgr publish-haddock`.
+
+### build
+`hkgr build` will try to do a pristine build of the latest created tarball
+for the tag. This is useful for catching missing files from the tarball,
+preventing brownbag releases.
 
 ### new
 `hkgr new` creates a new project.
