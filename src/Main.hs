@@ -46,12 +46,16 @@ main = do
       <$> existingTag
       <*> forceOpt "Move existing tag"
       <*> hlintOpt
+      <*> pure False
     , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
-      pure $ uploadCmd True False False True
+      uploadCmd True False False True
+      <$> switchWith 'N' "no-build" "Do not perhaps a local sanity build"
     , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
       pure $ upHaddockCmd False
     , Subcommand "publish-haddock" "Publish documentation to Hackage" $
       pure $ upHaddockCmd True
+    , Subcommand "build" "Do a local pristine build from the tarball" $
+      pure pristineBuildCmd
     , Subcommand "version" "Show the package version from .cabal file" $
       pure showVersionCmd
     , Subcommand "rename" "Rename the Cabal package" $
@@ -226,8 +230,8 @@ showVersionCmd = do
   putStrLn $ packageVersion pkgid
 
 -- FIXME cabal install creates tarballs now
-uploadCmd :: Bool -> Bool -> Bool -> Bool -> IO ()
-uploadCmd publish existingtag force noHlint = do
+uploadCmd :: Bool -> Bool -> Bool -> Bool -> Bool -> IO ()
+uploadCmd publish existingtag force noHlint nobuild = do
   needProgram "cabal"
   pkgid <- checkPackage False
   let tarball = sdistDir </> showPkgId pkgid <.> tarGzExt
@@ -242,6 +246,7 @@ uploadCmd publish existingtag force noHlint = do
       (if length untagged > 1 then "s" else "") ++ ":"
     mapM_ putStrLn untagged
   when publish $ do
+    unless nobuild pristineBuildCmd
     tagHash <- cmdOut $ git "rev-parse" [tag]
     branch <- cmdOut $ git "branch" ["--show-current"]
     mergeable <- gitBool "merge-base" ["--is-ancestor", "HEAD", tagHash]
@@ -447,3 +452,17 @@ githubCmd = do
   git_ "remote" ["add", "origin", "git@github.com:" ++ ghuser </> name <.> "git"]
   git_ "branch" ["-M", "main"]
 --  git_ "push" ["-u", "origin", "main"]
+
+pristineBuildCmd :: IO ()
+pristineBuildCmd = do
+  needProgram "cabal"
+  pkgid <- getPackageId
+  cwd <- getCurrentDirectory
+  let tarball = cwd </> sdistDir </> showPkgId pkgid <.> tarGzExt
+  exists <- doesFileExist tarball
+  unless exists $
+    error' $ "Please 'tagdist' first: " ++ tarball ++ " not found"
+  withTempDirectory "tmp-build" $ do
+    cmd_ "tar" ["xf", tarball]
+    setCurrentDirectory $ showPkgId pkgid
+    cabal_ "build" []
