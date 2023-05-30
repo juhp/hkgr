@@ -2,3 +2,4 @@ resolver: lts-14.27
 
 extra-deps:
 - simple-cmd-args-0.1.6
+- simple-prompt-0.2.0.1

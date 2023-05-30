@@ -6,7 +6,7 @@ module Main (main) where
 import Control.Applicative (pure, (<$>))
 #endif
 
-import Control.Exception (bracket_, finally, onException)
+import Control.Exception (bracket_, onException)
 import Control.Monad.Extra
 import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Char
@@ -18,12 +18,12 @@ import Data.Monoid ((<>))
 import Data.Version.Extra
 import SimpleCabal
 import SimpleCmdArgs
+import SimplePrompt (promptNonEmpty, promptPassword)
 import System.Directory
 import System.Environment.XDG.BaseDir
 import System.Exit (ExitCode (..))
 import System.FilePath
-import System.IO (BufferMode(NoBuffering), hSetBuffering, hSetEcho,
-                  stdin, stdout)
+import System.IO (BufferMode(NoBuffering), hSetBuffering, stdout)
 import qualified System.Process.Typed as P
 import Paths_hkgr (getDataFileName, version)
 
@@ -283,16 +283,9 @@ getUserPassword = do
 
 prompt :: Bool -> String -> IO String
 prompt hide s = do
-  putStr $ s ++ ": "
-  inp <- if hide then withoutEcho getLine else getLine
+  inp <- (if hide then promptPassword else promptNonEmpty) s
   when hide $ putChar '\n'
-  if null inp
-    then prompt hide s
-    else return inp
-  where
-    withoutEcho :: IO a -> IO a
-    withoutEcho action =
-      finally (hSetEcho stdin False >> action) (hSetEcho stdin True)
+  return inp
 
 upHaddockCmd :: Bool -> IO ()
 upHaddockCmd publish = do

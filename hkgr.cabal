@@ -39,6 +39,7 @@ executable hkgr
                      , filepath
                      , simple-cabal >= 0.1.0
                      , simple-cmd-args >= 0.1.6
+                     , simple-prompt >= 0.2
                      , typed-process
                      , xdg-basedir
 
