@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.3.1 (2023-07-05)
+- fix the template file SPDX license tag and cabal-version field placement
+
 ## 0.4.3 (2023-05-30)
 - bump template to Cabal 2.2
 - add pristine 'build' command: used before publish
