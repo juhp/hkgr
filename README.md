@@ -69,10 +69,12 @@ Published at https://hackage.haskell.org/package/hkgr-0.4
 
 ## Help
 
-```shellsession
-$ hkgr --version
-0.4.3
-$ hkgr --help
+`$ hkgr --version`
+```
+0.4.3.2
+```
+`$ hkgr --help`
+```
 Hackage Release tool
 
 Usage: hkgr [--version] COMMAND
@@ -118,7 +120,7 @@ otherwise `tagdist` refuses to run again to prevent accidently overwriting
 the tag and dist tarball.
 
 One should not be able to `tagdist` on an already published
-(ie released) version made with hkgr, before the version is bumped.
+(ie released) version made with hkgr, until the version is bumped.
 
 If sdist fails for some reason then hkgr tries to reset the tag.
 
@@ -167,3 +169,8 @@ and then `hkgr github` to add the github remote to your project.
 
 ## Requirements
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
+
+## Contribute
+`hkgr` is distributed under GPL version 3 or later.
+
+Reports and contributions are welcome at <https://github.com/juhp/hkgr>.
