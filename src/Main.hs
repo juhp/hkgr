@@ -222,6 +222,7 @@ sdist force noHlint pkgid = do
     let dest = takeDirectory $ cwd </> target
     unlessM (doesDirectoryExist dest) $
       createDirectoryIfMissing True dest
+    addCabalProject
     cabal_ "v2-sdist" ["--output-dir=" ++ dest]
 
 showVersionCmd :: IO ()
@@ -454,6 +455,13 @@ githubCmd = do
   git_ "branch" ["-M", "main"]
 --  git_ "push" ["-u", "origin", "main"]
 
+-- pristine cabal sdist/build fail if there's a top cabal.project
+addCabalProject :: IO ()
+addCabalProject = do
+  let cabalproject = "cabal.project"
+  unlessM (doesFileExist cabalproject) $
+    writeFile cabalproject "packages: .\n"
+
 pristineBuildCmd :: IO ()
 pristineBuildCmd = do
   needProgram "cabal"
@@ -466,4 +474,5 @@ pristineBuildCmd = do
   withTempDirectory "tmp-build" $ do
     cmd_ "tar" ["xf", tarball]
     setCurrentDirectory $ showPkgId pkgid
+    addCabalProject
     cabal_ "build" []
