@@ -475,4 +475,5 @@ pristineBuildCmd = do
     cmd_ "tar" ["xf", tarball]
     setCurrentDirectory $ showPkgId pkgid
     addCabalProject
+    putStrLn $ "cabal building" +-+ showPkgId pkgid <.> tarGzExt
     cabal_ "build" []
