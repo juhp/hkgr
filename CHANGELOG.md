@@ -1,4 +1,12 @@
 # Changelog
+## 0.4.4 (2024-05-03)
+- .cabal template: add autogen-modules and update tested-with ghc versions
+- publish,build: output message before cabal build
+- use simple-cmd +-+
+
+## 0.4.3.2 (2023-10-20)
+- use a cabal.project for pristine sdist/build to ignore any parent project
+- .cabal template: updated tested-with ghc versions
 
 ## 0.4.3.1 (2023-07-05)
 - fix the template file SPDX license tag and cabal-version field placement

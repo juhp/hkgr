@@ -70,10 +70,12 @@ Published at https://hackage.haskell.org/package/hkgr-0.4
 ## Help
 
 `$ hkgr --version`
+
 ```
-0.4.3.2
+0.4.4
 ```
 `$ hkgr --help`
+
 ```
 Hackage Release tool
 
@@ -171,6 +173,6 @@ and then `hkgr github` to add the github remote to your project.
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
 
 ## Contribute
-`hkgr` is distributed under GPL version 3 or later.
+`hkgr` is licensed and distributed under the GPL version 3 or later.
 
 Reports and contributions are welcome at <https://github.com/juhp/hkgr>.
