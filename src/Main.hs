@@ -17,6 +17,7 @@ import Data.Monoid ((<>))
 #endif
 import Data.Version.Extra
 import SimpleCabal
+import SimpleCmd ((+-+))
 import SimpleCmdArgs
 import SimplePrompt (promptNonEmpty, promptPassword)
 import System.Directory
@@ -127,7 +128,7 @@ tarGzExt = "tar.gz"
 assertTagOnBranch :: String -> IO ()
 assertTagOnBranch tag =
     whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
-    error' $ tag ++ " is no longer on branch: use --force to move it"
+    error' $ tag +-+ "is no longer on branch: use --force to move it"
 
 tagDistCmd :: Bool -> Bool -> Bool -> IO ()
 tagDistCmd existingtag force noHlint = do
@@ -137,19 +138,19 @@ tagDistCmd existingtag force noHlint = do
   when (not force && isJust mtagHash) $ assertTagOnBranch tag
   if existingtag
     then if isNothing mtagHash
-         then error' $ "tag " ++ tag ++ " does not exist"
+         then error' $ "tag" +-+ tag +-+ "does not exist"
          else sdist force noHlint pkgid
     else do
     if isJust mtagHash && not force
       then do
       headHash <- cmdOut (git "rev-parse" ["HEAD"])
       let onHead = Just headHash == mtagHash
-      putStrLn $ "tag is " ++ (if onHead then "" else "not ") ++ "on HEAD"
+      putStrLn $ "tag is" +-+ (if onHead then "" else "not") +-+ "on HEAD"
       let tarball = sdistDir </> showPkgId pkgid <.> tarGzExt
       exists <- doesFileExist tarball
       if exists
-        then error' $ "tag " ++ tag ++ " exists: use --force to " ++
-             (if exists then "override tarball and " else "") ++ "move"
+        then error' $ "tag" +-+ tag +-+ "exists: use --force to" +-+
+             (if exists then "override tarball and" else "") +-+ "move"
         else sdist force noHlint pkgid
       else do
       git_ "tag" $ ["--force" | force] ++ [tag]
@@ -181,7 +182,7 @@ checkPackage checkDiff = do
       let pkg = packageName pkgid
           cabalfile = unPackageName pkg <.> "cabal"
       unlessM (doesFileExist cabalfile) $
-        error' $ ".cabal filename differs from package name: " ++ unPackageName pkg
+        error' $ ".cabal filename differs from package name:" +-+ unPackageName pkg
       diff <- cmdOut (git "diff" ["-U0", "HEAD", cabalfile])
       when (any ("+version:" `isPrefixOf`) (lines (map toLower diff))) $
         error' "Please commit or revert the changed package Version first"
@@ -190,10 +191,10 @@ checkPackage checkDiff = do
     checkNotPublished pkgid = do
       let published = sdistDir </> showPkgId pkgid <.> tarGzExt <.> "published"
       exists <- doesFileExist published
-      when exists $ error' $ showPkgId pkgid <> " was already published!!"
+      when exists $ error' $ showPkgId pkgid +-+ "was already published!!"
       let oldpublished = "dist" </> showPkgId pkgid <.> tarGzExt <.> "published"
       oldExists <- doesFileExist oldpublished
-      when oldExists $ error' $ showPkgId pkgid <> " was already published!!"
+      when oldExists $ error' $ showPkgId pkgid +-+ "was already published!!"
 
 sdistDir :: FilePath
 sdistDir = ".hkgr"
@@ -206,7 +207,7 @@ sdist force noHlint pkgid = do
   when haveTarget $
     if force
     then removeFile target
-    else error' $ target <> " exists already!"
+    else error' $ target +-+ "exists already!"
   cwd <- getCurrentDirectory
   withTempDirectory "tmp-sdist" $ do
     git_ "clone" ["-q", "--no-checkout", "..", "."]
@@ -258,7 +259,7 @@ uploadCmd publish existingtag force noHlint nobuild = do
     git_ "push" ["origin", tag]
   userpassBS <- getUserPassword
   void $ P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : ["--publish" | publish] ++ [tarball]))
-  putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
+  putStrLn $ (if publish then "Published at" else "Uploaded to") +-+ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
     createFileLink (takeFileName tarball) (tarball <.> "published")
 
@@ -271,7 +272,7 @@ getUserPassword = do
     if exists
       then readFile cabalConfig
       else do
-      putStrLn $ "Warning: " ++ cabalConfig ++ " not found!"
+      putStrLn $ "Warning:" +-+ cabalConfig +-+ "not found!"
       return ""
   muser <- maybeGetHackage "username" False cabalConfig
   mpasswd <- maybeGetHackage "password" True cabalConfig
@@ -281,7 +282,7 @@ getUserPassword = do
     maybeGetHackage field hide cabalConfig =
       if haveCabalConfigField
         then return Nothing
-        else Just <$> prompt hide ("hackage.haskell.org " ++ field)
+        else Just <$> prompt hide ("hackage.haskell.org" +-+ field)
       where
         haveCabalConfigField :: Bool
         haveCabalConfigField =
@@ -300,7 +301,7 @@ upHaddockCmd publish = do
   _out <- P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : "--documentation" : ["--publish" | publish]))
 
   pkgid <- getPackageId
-  putStrLn $ (if publish then "Published at " else "Uploaded to ") ++ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
+  putStrLn $ (if publish then "Published at" else "Uploaded to") +-+ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
 
 cabal_ :: String -> [String] -> IO ()
 cabal_ c args =
@@ -316,7 +317,7 @@ withTempDirectory dir run =
 needProgram :: String -> IO ()
 needProgram prog = do
   mx <- findExecutable prog
-  unless (isJust mx) $ error' $ "program needs " ++ prog
+  unless (isJust mx) $ error' $ "program needs" +-+ prog
 -- #endif
 
 -- FIXME warning if upstream template changed (keep a versioned template copy)
@@ -356,14 +357,14 @@ newCmd mproject = do
       whenM (doesFileExist "CHANGELOG.md") $
         renameFile "CHANGELOG.md" "ChangeLog.md"
       unlessM (doesFileExist "README.md") $
-        writeFile "README.md" $ "# " ++ name ++ "\n"
+        writeFile "README.md" $ "#" +-+ name ++ "\n"
       unless origsetup $ do
         setup <- doesFileExist setupFile
         when setup $ removeFile setupFile
       setupCabalTemplate name
     Just cblName ->
       when (cblName /= name) $
-      putStrLn $ "Warning: " ++ cblName ++ " different to " ++ name
+      putStrLn $ "Warning:" +-+ cblName +-+ "different to" +-+ name
   haveStackCfg <- doesFileExist "stack.yaml"
   mstack <- findExecutable "stack"
   -- FIXME add stack.yaml template too
@@ -399,11 +400,11 @@ newCmd mproject = do
         replaceHolder "EMAIL" usermail userTemplate
         githubuser <- cmdOut $ git "config" ["--global", "github.user"]
         replaceHolder "USER" githubuser userTemplate
-        putStrLn $ userTemplate ++ " set up"
+        putStrLn $ userTemplate +-+ "set up"
       copyFile userTemplate $ name <.> "cabal"
       replaceHolder "PROJECT" name $ name <.> "cabal"
       replaceHolder "PROJECT_" (map underscore name) $ name <.> "cabal"
-      replaceHolder "SUMMARY" (name ++ " project") $ name <.> "cabal"
+      replaceHolder "SUMMARY" (name +-+ "project") $ name <.> "cabal"
       year <- cmdOut (P.proc "date" ["+%Y"])
       replaceHolder "YEAR" year $ name <.> "cabal"
       let modulePath = "src/MyLib.hs"
@@ -470,7 +471,7 @@ pristineBuildCmd = do
   let tarball = cwd </> sdistDir </> showPkgId pkgid <.> tarGzExt
   exists <- doesFileExist tarball
   unless exists $
-    error' $ "Please 'tagdist' first: " ++ tarball ++ " not found"
+    error' $ "Please 'tagdist' first:" +-+ tarball +-+ "not found"
   withTempDirectory "tmp-build" $ do
     cmd_ "tar" ["xf", tarball]
     setCurrentDirectory $ showPkgId pkgid
