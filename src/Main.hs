@@ -12,9 +12,6 @@ import qualified Data.ByteString.Lazy.Char8 as B
 import Data.Char
 import Data.List.Extra
 import Data.Maybe
-#if !MIN_VERSION_base(4,11,0)
-import Data.Monoid ((<>))
-#endif
 import Data.Version.Extra
 import SimpleCabal
 import SimpleCmd ((+-+))
