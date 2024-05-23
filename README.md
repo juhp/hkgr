@@ -72,7 +72,7 @@ Published at https://hackage.haskell.org/package/hkgr-0.4
 `$ hkgr --version`
 
 ```
-0.4.4
+0.4.5
 ```
 `$ hkgr --help`
 
@@ -91,7 +91,7 @@ Available commands:
   new                      setup a new project
   tagdist                  'git tag' version and 'cabal sdist' tarball
   upload                   'cabal upload' candidate tarball to Hackage
-  publish                  Publish to Hackage ('cabal upload --publish')
+  publish                  git push and cabal upload --publish
   upload-haddock           Upload candidate documentation to Hackage
   publish-haddock          Publish documentation to Hackage
   build                    Do a local pristine build from the tarball

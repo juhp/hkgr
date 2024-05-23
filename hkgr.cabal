@@ -20,8 +20,9 @@ data-dir:            data
 data-files:          template.cabal.tmpl
 extra-doc-files:     README.md
                    , CHANGELOG.md
-tested-with:         GHC == 9.6 || == 9.4 || == 9.2 || == 9.0 || == 8.10
-                     || == 8.8 || == 8.6 || == 8.4 || == 8.2 || == 8.0
+tested-with:         GHC == 9.8 || == 9.6 || == 9.4 || == 9.2 || == 9.0
+                     || == 8.10 || == 8.8 || == 8.6 || == 8.4 || == 8.2
+                     || == 8.0
 
 source-repository head
   type:                git

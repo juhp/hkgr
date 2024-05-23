@@ -18,3 +18,5 @@
 - check published on Hackage (drop lockfiles)
 - warn about doc files in datadir
 - do not error if remote branch doesn't exist? ie offer to create it
+
+- --dryrun
