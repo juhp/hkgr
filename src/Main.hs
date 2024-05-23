@@ -39,15 +39,16 @@ main = do
       <$> existingTag
       <*> forceOpt "Move existing tag"
       <*> hlintOpt
+      <*> nobuildOpt
     , Subcommand "upload" "'cabal upload' candidate tarball to Hackage" $
       uploadCmd False
       <$> existingTag
       <*> forceOpt "Move existing tag"
       <*> hlintOpt
-      <*> pure False
+      <*> nobuildOpt
     , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
       uploadCmd True False False True
-      <$> switchWith 'N' "no-build" "Do not perhaps a local sanity build"
+      <$> nobuildOpt
     , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
       pure $ upHaddockCmd False
     , Subcommand "publish-haddock" "Publish documentation to Hackage" $
@@ -70,6 +71,9 @@ main = do
 
     hlintOpt =
       switchWith 'H' "no-hlint" "Skip running hlint"
+
+    nobuildOpt =
+      switchWith 'N' "no-build" "Do not perform local sanity build"
 
 git :: String -> [String] -> P.ProcessConfig () () ()
 git c args = P.proc "git" (c:args)
@@ -127,8 +131,8 @@ assertTagOnBranch tag =
     whenM (null <$> cmdOut (git "branch" ["--contains", "tags/" ++ tag])) $
     error' $ tag +-+ "is no longer on branch: use --force to move it"
 
-tagDistCmd :: Bool -> Bool -> Bool -> IO ()
-tagDistCmd existingtag force noHlint = do
+tagDistCmd :: Bool -> Bool -> Bool -> Bool -> IO ()
+tagDistCmd existingtag force noHlint nobuild = do
   pkgid <- checkPackage True
   let tag = pkgidTag pkgid
   mtagHash <- cmdMaybe (git "rev-parse" [tag])
@@ -136,7 +140,7 @@ tagDistCmd existingtag force noHlint = do
   if existingtag
     then if isNothing mtagHash
          then error' $ "tag" +-+ tag +-+ "does not exist"
-         else sdist force noHlint pkgid
+         else sdist force noHlint nobuild pkgid
     else do
     if isJust mtagHash && not force
       then do
@@ -148,11 +152,11 @@ tagDistCmd existingtag force noHlint = do
       if exists
         then error' $ "tag" +-+ tag +-+ "exists: use --force to" +-+
              (if exists then "override tarball and" else "") +-+ "move"
-        else sdist force noHlint pkgid
+        else sdist force noHlint nobuild pkgid
       else do
       git_ "tag" $ ["--force" | force] ++ [tag]
       unless force $ putStrLn tag
-      sdist force noHlint pkgid `onException` do
+      sdist force noHlint nobuild pkgid `onException` do
         putStrLn "Resetting tag"
         if force
           then git_ "tag" ["--force", tag, fromJust mtagHash]
@@ -196,8 +200,8 @@ checkPackage checkDiff = do
 sdistDir :: FilePath
 sdistDir = ".hkgr"
 
-sdist :: Bool -> Bool -> PackageIdentifier -> IO ()
-sdist force noHlint pkgid = do
+sdist :: Bool -> Bool -> Bool -> PackageIdentifier -> IO ()
+sdist force noHlint nobuild pkgid = do
   let tag = pkgidTag pkgid
   let target = sdistDir </> showPkgId pkgid <.> tarGzExt
   haveTarget <- doesFileExist target
@@ -222,6 +226,7 @@ sdist force noHlint pkgid = do
       createDirectoryIfMissing True dest
     addCabalProject
     cabal_ "v2-sdist" ["--output-dir=" ++ dest]
+  unless nobuild pristineBuildCmd
 
 showVersionCmd :: IO ()
 showVersionCmd = do
@@ -237,7 +242,7 @@ uploadCmd publish existingtag force noHlint nobuild = do
       tag = pkgidTag pkgid
   exists <- doesFileExist tarball
   when (force || not exists) $
-    tagDistCmd existingtag force noHlint
+    tagDistCmd existingtag force noHlint nobuild
   assertTagOnBranch tag
   untagged <- cmdLines $ git "log" ["--pretty=reference", tag ++ "..HEAD"]
   unless (null untagged) $ do
@@ -245,7 +250,6 @@ uploadCmd publish existingtag force noHlint nobuild = do
       (if length untagged > 1 then "s" else "") ++ ":"
     mapM_ putStrLn untagged
   when publish $ do
-    unless nobuild pristineBuildCmd
     tagHash <- cmdOut $ git "rev-parse" [tag]
     branch <- cmdOut $ git "branch" ["--show-current"]
     mergeable <- gitBool "merge-base" ["--is-ancestor", "HEAD", tagHash]

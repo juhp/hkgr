@@ -1,4 +1,7 @@
 # Changelog
+## 0.4.5 (2024-05-23)
+- 'tagdist', 'upload': also do pristine cabal build unless --no-build
+
 ## 0.4.4 (2024-05-03)
 - .cabal template: add autogen-modules and update tested-with ghc versions
 - publish,build: output message before cabal build
