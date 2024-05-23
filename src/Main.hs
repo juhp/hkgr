@@ -46,9 +46,11 @@ main = do
       <*> forceOpt "Move existing tag"
       <*> hlintOpt
       <*> nobuildOpt
-    , Subcommand "publish" "Publish to Hackage ('cabal upload --publish')" $
+      <*> pure False
+    , Subcommand "publish" "git push and cabal upload --publish" $
       uploadCmd True False False True
       <$> nobuildOpt
+      <*> switchWith 'U' "no-upload" "Do not upload to Hackage"
     , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
       pure $ upHaddockCmd False
     , Subcommand "publish-haddock" "Publish documentation to Hackage" $
@@ -234,8 +236,8 @@ showVersionCmd = do
   putStrLn $ packageVersion pkgid
 
 -- FIXME cabal install creates tarballs now
-uploadCmd :: Bool -> Bool -> Bool -> Bool -> Bool -> IO ()
-uploadCmd publish existingtag force noHlint nobuild = do
+uploadCmd :: Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> IO ()
+uploadCmd publish existingtag force noHlint nobuild noupload = do
   needProgram "cabal"
   pkgid <- checkPackage False
   let tarball = sdistDir </> showPkgId pkgid <.> tarGzExt
@@ -258,9 +260,11 @@ uploadCmd publish existingtag force noHlint nobuild = do
       git_ "push" ["--quiet", "origin", tagHash ++ ":" ++ branch]
       putStrLn "done"
     git_ "push" ["origin", tag]
-  userpassBS <- getUserPassword
-  void $ P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : ["--publish" | publish] ++ [tarball]))
-  putStrLn $ (if publish then "Published at" else "Uploaded to") +-+ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
+  unless noupload $ do
+    userpassBS <- getUserPassword
+    -- FIXME if password fails, repeat login
+    void $ P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : ["--publish" | publish] ++ [tarball]))
+    putStrLn $ (if publish then "Published at" else "Uploaded to") +-+ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
   when publish $
     createFileLink (takeFileName tarball) (tarball <.> "published")
 
