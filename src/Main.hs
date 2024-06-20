@@ -378,7 +378,8 @@ newCmd mlicense mproject = do
   mstack <- findExecutable "stack"
   -- FIXME add stack.yaml template too
   when (not haveStackCfg && isJust mstack) $ do
-    cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-19"]
+    -- FIXME determine last lts automatically
+    cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-21"]
     sed ["/^#/d", "/^$/d"] "stack.yaml"
   haveGit <- doesDirectoryExist ".git"
   unless haveGit $ do
