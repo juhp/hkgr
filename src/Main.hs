@@ -33,7 +33,8 @@ main = do
     subcommands
     [ Subcommand "new" "setup a new project" $
       newCmd
-      <$> optional (strArg "PROJECT")
+      <$> optional (strOptionWith 'l' "license" "LICENSE" "Specify license")
+      <*> optional (strArg "PROJECT")
     , Subcommand "tagdist" "'git tag' version and 'cabal sdist' tarball" $
       tagDistCmd
       <$> existingTag
@@ -327,9 +328,8 @@ needProgram prog = do
 
 -- FIXME warning if upstream template changed (keep a versioned template copy)
 -- FIXME add default templates dir
--- FIXME --license
-newCmd :: Maybe String -> IO ()
-newCmd mproject = do
+newCmd :: Maybe String -> Maybe String -> IO ()
+newCmd mlicense mproject = do
   needProgram "cabal"
   name <- case mproject of
     Just ns -> return ns
@@ -352,12 +352,16 @@ newCmd mproject = do
       let setupFile = "Setup.hs"
       origsetup <- doesFileExist setupFile
       cabalversion <- readVersion <$> cmd "cabal" ["--numeric-version"]
-      let license = if cabalversion > makeVersion [3,4]
-                    then "BSD-3-Clause"
-                    else "BSD3"
-        in cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=" ++ license, "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=src"]
+      let license =
+            case mlicense of
+              Just l -> l
+              Nothing ->
+                if cabalversion > makeVersion [3,4]
+                then "BSD-3-Clause"
+                else "BSD3"
+      cabal_ "init" ["--quiet", "--no-comments", "--non-interactive", "--is-libandexe", "--cabal-version=1.18", "--license=" ++ license, "--package-name=" ++ name, "--version=0.1.0", "--dependency=base<5", "--source-dir=src"]
       whenJustM (cmdMaybe $ P.proc "find" ["-name", "Main.hs"]) $ \ file -> do
-        sed ["1s/^module Main where/-- SPDX-License-Identifier: BSD-3-Clause\\n\\nmodule Main (main) where/"] file
+        sed ["1s/^module Main where/-- SPDX-License-Identifier:" +-+ license ++ "\\n\\nmodule Main (main) where/"] file
         unless (file == "src/Main.hs") $ renameFile file "src/Main.hs"
       whenM (doesFileExist "CHANGELOG.md") $
         renameFile "CHANGELOG.md" "ChangeLog.md"
@@ -366,7 +370,7 @@ newCmd mproject = do
       unless origsetup $ do
         setup <- doesFileExist setupFile
         when setup $ removeFile setupFile
-      setupCabalTemplate name
+      setupCabalTemplate name license
     Just cblName ->
       when (cblName /= name) $
       putStrLn $ "Warning:" +-+ cblName +-+ "different to" +-+ name
@@ -389,8 +393,8 @@ newCmd mproject = do
         [cbl] -> return $ Just (takeBaseName cbl)
         _ -> error' "More than one .cabal file found!"
 
-    setupCabalTemplate :: String -> IO ()
-    setupCabalTemplate name = do
+    setupCabalTemplate :: String -> String -> IO ()
+    setupCabalTemplate name license = do
       userTemplate <- getUserConfigFile "hkgr" "template.cabal"
       unlessM (doesFileExist userTemplate) $ do
         origTemplate <- getDataFileName "template.cabal.tmpl"
@@ -410,6 +414,7 @@ newCmd mproject = do
       replaceHolder "PROJECT" name $ name <.> "cabal"
       replaceHolder "PROJECT_" (map underscore name) $ name <.> "cabal"
       replaceHolder "SUMMARY" (name +-+ "project") $ name <.> "cabal"
+      replaceHolder "LICENSE" license $ name <.> "cabal"
       year <- cmdOut (P.proc "date" ["+%Y"])
       replaceHolder "YEAR" year $ name <.> "cabal"
       let modulePath = "src/MyLib.hs"
