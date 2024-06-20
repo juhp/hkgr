@@ -20,3 +20,5 @@
 - do not error if remote branch doesn't exist? ie offer to create it
 
 - --dryrun
+
+- `change-license` command

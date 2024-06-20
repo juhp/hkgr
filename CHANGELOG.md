@@ -1,4 +1,10 @@
 # Changelog
+
+## 0.4.6 (2024-06-20)
+- 'new': add --license option
+- 'new': bump stack.yaml resolver to lts-21
+- add missing SUMMARY placeholder to template
+
 ## 0.4.5 (2024-05-23)
 - 'tagdist', 'upload': also do pristine cabal build unless --no-build
 
