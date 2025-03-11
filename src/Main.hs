@@ -139,13 +139,14 @@ tagDistCmd existingtag force noHlint nobuild = do
   pkgid <- checkPackage True
   let tag = pkgidTag pkgid
   mtagHash <- cmdMaybe (git "rev-parse" [tag])
-  when (not force && isJust mtagHash) $ assertTagOnBranch tag
+  let tagexists = isJust mtagHash
+  when (not force && tagexists) $ assertTagOnBranch tag
   if existingtag
-    then if isNothing mtagHash
+    then if not tagexists
          then error' $ "tag" +-+ tag +-+ "does not exist"
          else sdist force noHlint nobuild pkgid
     else do
-    if isJust mtagHash && not force
+    if tagexists && not force
       then do
       headHash <- cmdOut (git "rev-parse" ["HEAD"])
       let onHead = Just headHash == mtagHash
@@ -159,7 +160,9 @@ tagDistCmd existingtag force noHlint nobuild = do
       else do
       git_ "tag" $ ["--force" | force] ++ [tag]
       unless force $ putStrLn tag
-      sdist force noHlint nobuild pkgid `onException` do
+      -- actually always forced because: `== not (tagexists && not force)`
+      sdist (force || not tagexists) noHlint nobuild pkgid
+        `onException` do
         putStrLn "Resetting tag"
         if force
           then git_ "tag" ["--force", tag, fromJust mtagHash]
@@ -236,6 +239,11 @@ showVersionCmd = do
   pkgid <- getPackageId
   putStrLn $ packageVersion pkgid
 
+gitListTag :: String -> IO Bool
+gitListTag tag = do
+  res <- cmdOut $ git "tag" ["--list", tag]
+  return $ res == tag
+
 -- FIXME cabal install creates tarballs now
 uploadCmd :: Bool -> Bool -> Bool -> Bool -> Bool -> Bool -> IO ()
 uploadCmd publish existingtag force noHlint nobuild noupload = do
@@ -243,8 +251,10 @@ uploadCmd publish existingtag force noHlint nobuild noupload = do
   pkgid <- checkPackage False
   let tarball = sdistDir </> showPkgId pkgid <.> tarGzExt
       tag = pkgidTag pkgid
-  exists <- doesFileExist tarball
-  when (force || not exists) $
+  tagexists <- gitListTag tag
+  when (not tagexists && existingtag) $
+    error' $ tag +-+ "does not exist"
+  when (force || not tagexists) $
     tagDistCmd existingtag force noHlint nobuild
   assertTagOnBranch tag
   untagged <- cmdLines $ git "log" ["--pretty=reference", tag ++ "..HEAD"]
