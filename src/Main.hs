@@ -469,7 +469,8 @@ renameCmd newname = do
   sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g", "s/Paths_" ++ replace "-" "_" oldname ++ "/Paths_" ++ replace "-" "_" newname ++ "/g"] $ oldname <.> "cabal"
   git_ "mv" [oldname <.> "cabal", newname <.> "cabal"]
   -- FIXME for all *.hs
-  sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g", "s/Paths_" ++ replace "-" "_" oldname ++ "/Paths_" ++ replace "-" "_" newname ++ "/g"] "src/Main.hs"
+  whenM (doesFileExist "src/Main.hs") $
+    sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g", "s/Paths_" ++ replace "-" "_" oldname ++ "/Paths_" ++ replace "-" "_" newname ++ "/g"] "src/Main.hs"
   sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] "README.md"
   sed ["s/" ++ oldname ++ "/" ++ newname ++ "/g"] "ChangeLog.md"
   renameDirectory (".." </> oldname) (".." </> newname)
