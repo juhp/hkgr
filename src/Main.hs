@@ -227,7 +227,7 @@ sdist force noHlint nobuild pkgid = do
     unless noHlint $ do
       mhlint <- findExecutable "hlint"
       when (isJust mhlint) $ do
-        putStrLn "Running hlint"
+        putStrLn "# Running hlint"
         void $ P.runProcess $ P.proc "hlint" ["--no-summary", "."]
     let dest = takeDirectory $ cwd </> target
     unlessM (doesDirectoryExist dest) $
