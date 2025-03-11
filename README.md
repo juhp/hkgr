@@ -31,6 +31,7 @@ Perhaps:
 ["src/Main.hs","data/template.cabal.tmpl","README.md","CHANGELOG.md","LICENSE","hkgr.cabal"]
 [(NoExec,"CHANGELOG.md"),(NoExec,"LICENSE"),(NoExec,"README.md"),(NoExec,"data/template.cabal.tmpl"),(NoExec,"hkgr.cabal"),(NoExec,"src/Main.hs")]
 Wrote tarball sdist to /home/petersen/github/hkgr/.hkgr/hkgr-0.4.tar.gz
+hackage.haskell.org password: ^C
 ```
 
 After fixing up, retag a new tarball with `--force` and upload candidate,
@@ -72,7 +73,7 @@ Published at https://hackage.haskell.org/package/hkgr-0.4
 `$ hkgr --version`
 
 ```
-0.4.6
+0.4.7
 ```
 `$ hkgr --help`
 
@@ -103,7 +104,7 @@ Available commands:
 ## Details
 
 ### tagdist
-`hkgr tagdist` makes a dist tarball from a git tag:
+`hkgr tagdist` creates a git tag and a sdist tarball from it:
 
 The `tagdist` command first reads the current package version
 (from the `.cabal` file in the current directory), and uses that to `git tag`.
@@ -125,6 +126,9 @@ One should not be able to `tagdist` on an already published
 (ie released) version made with hkgr, until the version is bumped.
 
 If sdist fails for some reason then hkgr tries to reset the tag.
+
+A cabal build of the tarball content is also attempted to catch any build errors
+from the package.
 
 Alternatively if you have already manually tagged a release with 'v' prefix
 you can use `--existing-tag` to create a dist tarball.
@@ -157,7 +161,7 @@ preventing brownbag releases.
 ### new
 `hkgr new` creates a new project.
 
-If you don't pass a name it will try to check the current directory.
+If you don't pass a name it will try to check and use the current directory name.
 
 It uses `cabal init` to setup various files but replaces the .cabal file
 with a template stored in `~/.config/hkgr/template.cabal` which the user

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.7 (2025-03-11)
+- 'rename': only sed Main.hs if it exists
+- 'sdist': prefix "Running hlint" with '#'
+- 'upload': handle existing tarball from aborted build without tag
+- 'upload-haddock': add --force which removes existing haddock tarball
+
 ## 0.4.6 (2024-06-20)
 - 'new': add --license option
 - 'new': bump stack.yaml resolver to lts-21
