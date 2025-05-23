@@ -395,7 +395,7 @@ newCmd mlicense mproject = do
   -- FIXME add stack.yaml template too
   when (not haveStackCfg && isJust mstack) $ do
     -- FIXME determine last lts automatically
-    cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-21"]
+    cmd_ "stack" ["init", "--verbosity", "warn", "--resolver", "lts-22"]
     sed ["/^#/d", "/^$/d"] "stack.yaml"
   haveGit <- doesDirectoryExist ".git"
   unless haveGit $ do
