@@ -73,7 +73,7 @@ Published at https://hackage.haskell.org/package/hkgr-0.4
 `$ hkgr --version`
 
 ```
-0.4.7
+0.4.8
 ```
 `$ hkgr --help`
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.8 (2025-05-23)
+- bump stack default to lts-22
+
 ## 0.4.7 (2025-03-11)
 - 'rename': only sed Main.hs if it exists
 - 'sdist': prefix "Running hlint" with '#'
