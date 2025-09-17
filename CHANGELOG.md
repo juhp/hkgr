@@ -4,7 +4,7 @@
 - support Cabal's XDG layout (#5, reported by Artem)
   ie check for ~/.config/cabal/config before ~/.cabal/config
 - do not prompt for password if there is is 'token' or 'password-command' (#5)
-- upload-haddock/publish-haddock: now builds docs first with v2-haddock
+- upload-haddock/publish-haddock: now builds docs first with v2-haddock (#6)
 - bump default stack init to lts-23
 
 ## 0.4.8 (2025-05-23)
