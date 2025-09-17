@@ -92,11 +92,13 @@ gitBool c args = do
   (== ExitSuccess) <$> P.runProcess (git c args)
 
 removeTrailingNewline :: B.ByteString -> B.ByteString
-removeTrailingNewline "" = ""
 removeTrailingNewline bs =
-  if B.last bs == '\n'
-  then B.init bs
-  else bs
+  case B.unsnoc bs of
+    Nothing -> bs
+    Just (ini,l) ->
+      if l == '\n'
+      then ini
+      else bs
 
 cmd :: String -> [String] -> IO String
 cmd c args =

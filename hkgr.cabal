@@ -61,4 +61,3 @@ executable hkgr
     ghc-options:       -Wunused-packages
 
   default-language:    Haskell2010
-  default-extensions:  OverloadedStrings
