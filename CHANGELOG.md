@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.9 (2025-09-17)
+- support Cabal's XDG layout (#5, reported by Artem)
+  ie check for ~/.config/cabal/config before ~/.cabal/config
+- bump default stack init to lts-23
+
 ## 0.4.8 (2025-05-23)
 - bump stack default to lts-22
 
