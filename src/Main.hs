@@ -292,26 +292,29 @@ getUserPassword = do
     if have_xdg
       then readFile xdgConfig
       else do
-      let cabalConfig = home </> ".cabal/config"
-      exists <- doesFileExist cabalConfig
+      let config = home </> ".cabal/config"
+      exists <- doesFileExist config
       if exists
-        then readFile cabalConfig
+        then readFile config
         else do
         putStrLn $ "Warning: no cabal" +-+ show "config" +-+ "file found!"
         return ""
   muser <- maybeGetHackage "username" False cabalConfig
-  mpasswd <- maybeGetHackage "password" True cabalConfig
+  mpasswd <-
+    if haveField "token" cabalConfig
+    then return Nothing
+    else maybeGetHackage "password" True cabalConfig
   return $ B.pack $ unlines $ catMaybes [muser, mpasswd]
   where
     maybeGetHackage :: String -> Bool -> String -> IO (Maybe String)
     maybeGetHackage field hide cabalConfig =
-      if haveCabalConfigField
+      if haveField field cabalConfig
         then return Nothing
         else Just <$> prompt hide ("hackage.haskell.org" +-+ field)
-      where
-        haveCabalConfigField :: Bool
-        haveCabalConfigField =
-          any ((field ++ ":") `isPrefixOf`) (lines cabalConfig)
+
+    haveField :: String -> String -> Bool
+    haveField field config =
+      any ((field ++ ":") `isPrefixOf`) (lines config)
 
 prompt :: Bool -> String -> IO String
 prompt hide s = do
