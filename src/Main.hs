@@ -53,11 +53,9 @@ main = do
       <$> nobuildOpt
       <*> switchWith 'U' "no-upload" "Do not upload to Hackage"
     , Subcommand "upload-haddock" "Upload candidate documentation to Hackage" $
-      upHaddockCmd False
-      <$> forceOpt "rebuild doc tarball"
+      pure (upHaddockCmd False)
     , Subcommand "publish-haddock" "Publish documentation to Hackage" $
-      upHaddockCmd True
-      <$> forceOpt "rebuild doc tarball"
+      pure (upHaddockCmd True)
     , Subcommand "build" "Do a local pristine build from the tarball" $
       pure pristineBuildCmd
     , Subcommand "version" "Show the package version from .cabal file" $
@@ -325,17 +323,14 @@ prompt hide s = do
   when hide $ putChar '\n'
   return inp
 
-upHaddockCmd :: Bool -> Bool -> IO ()
-upHaddockCmd publish force = do
+upHaddockCmd :: Bool -> IO ()
+upHaddockCmd publish = do
   needProgram "cabal"
   userpassBS <- getUserPassword
   pkgid <- getPackageId
-  when force $ do
-    let tarball = "dist" </> showPkgId pkgid ++ '-' : "docs" <.> tarGzExt
-    exists <- doesFileExist tarball
-    when exists $
-      removeFile tarball
-  _out <- P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : "--documentation" : ["--publish" | publish]))
+  let tarball = "dist-newstyle" </> showPkgId pkgid ++ '-' : "docs" <.> tarGzExt
+  cabal_ "haddock" ["--haddock-for-hackage"]
+  _out <- P.readProcessInterleaved_ (P.setStdin (P.byteStringInput userpassBS) $ P.proc "cabal" ("upload" : "--documentation" : ["--publish" | publish] ++ [tarball]))
   putStrLn $ (if publish then "Published at" else "Uploaded to") +-+ "https://hackage.haskell.org/package/" ++ showPkgId pkgid ++ if publish then "" else "/candidate"
 
 cabal_ :: String -> [String] -> IO ()
