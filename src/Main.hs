@@ -18,7 +18,7 @@ import SimpleCmd ((+-+))
 import SimpleCmdArgs
 import SimplePrompt (promptNonEmpty, promptPassword)
 import System.Directory
-import System.Environment.XDG.BaseDir
+import System.Environment.XDG.BaseDir (getUserConfigFile)
 import System.Exit (ExitCode (..))
 import System.FilePath
 import System.IO (BufferMode(NoBuffering), hSetBuffering, stdout)
@@ -287,13 +287,18 @@ getUserPassword :: IO B.ByteString
 getUserPassword = do
   cabalConfig <- do
     home <- getHomeDirectory
-    let cabalConfig = home </> ".cabal/config"
-    exists <- doesFileExist cabalConfig
-    if exists
-      then readFile cabalConfig
+    xdgConfig <- getUserConfigFile "cabal" "config"
+    have_xdg <- doesFileExist xdgConfig
+    if have_xdg
+      then readFile xdgConfig
       else do
-      putStrLn $ "Warning:" +-+ cabalConfig +-+ "not found!"
-      return ""
+      let cabalConfig = home </> ".cabal/config"
+      exists <- doesFileExist cabalConfig
+      if exists
+        then readFile cabalConfig
+        else do
+        putStrLn $ "Warning: no cabal" +-+ show "config" +-+ "file found!"
+        return ""
   muser <- maybeGetHackage "username" False cabalConfig
   mpasswd <- maybeGetHackage "password" True cabalConfig
   return $ B.pack $ unlines $ catMaybes [muser, mpasswd]
