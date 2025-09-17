@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.9 (2025-09-17)
+## 0.5 (2025-09-18)
 - support Cabal's XDG layout (#5, reported by Artem)
   ie check for ~/.config/cabal/config before ~/.cabal/config
 - do not prompt for password if there is is 'token' or 'password-command' (#5)
