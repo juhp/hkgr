@@ -299,21 +299,24 @@ getUserPassword = do
         else do
         putStrLn $ "Warning: no cabal" +-+ show "config" +-+ "file found!"
         return ""
-  muser <- maybeGetHackage "username" False cabalConfig
-  mpasswd <-
-    if haveField "token" cabalConfig
-    then return Nothing
-    else maybeGetHackage "password" True cabalConfig
+  muser <- maybeGetUsername cabalConfig
+  mpasswd <- maybeGetPassword cabalConfig
   return $ B.pack $ unlines $ catMaybes [muser, mpasswd]
   where
-    maybeGetHackage :: String -> Bool -> String -> IO (Maybe String)
-    maybeGetHackage field hide cabalConfig =
-      if haveField field cabalConfig
+    maybeGetUsername :: String -> IO (Maybe String)
+    maybeGetUsername config =
+      if haveField config "username"
         then return Nothing
-        else Just <$> prompt hide ("hackage.haskell.org" +-+ field)
+        else Just <$> prompt False "hackage.haskell.org username"
+
+    maybeGetPassword :: String -> IO (Maybe String)
+    maybeGetPassword config =
+      if any (haveField config) ["password", "token", "password-command"]
+        then return Nothing
+        else Just <$> prompt True "hackage.haskell.org password"
 
     haveField :: String -> String -> Bool
-    haveField field config =
+    haveField config field =
       any ((field ++ ":") `isPrefixOf`) (lines config)
 
 prompt :: Bool -> String -> IO String
