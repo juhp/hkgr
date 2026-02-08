@@ -223,7 +223,7 @@ sdist force noHlint nobuild pkgid = do
     git_ "checkout" ["-q", tag]
     whenM (doesFileExist ".gitmodules") $
       git_ "submodule" ["update", "--init"]
-    cabal_ "check" []
+    cabal_ "check" ["--ignore=missing-upper-bounds"]
     unless noHlint $ do
       mhlint <- findExecutable "hlint"
       when (isJust mhlint) $ do
