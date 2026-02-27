@@ -485,10 +485,11 @@ renameCmd newname = do
 
 githubCmd :: IO ()
 githubCmd = do
-  ghuser <- cmdOut $ git "config" ["--global", "github.user"]
+  mghuser <- cmdMaybe $ git "config" ["--global", "github.user"]
   pkgid <- getPackageId
   let name = unPackageName (pkgName pkgid)
-  git_ "remote" ["add", "origin", "git@github.com:" ++ ghuser </> name <.> "git"]
+  whenJust mghuser $ \ghuser ->
+    git_ "remote" ["add", "origin", "git@github.com:" ++ ghuser </> name <.> "git"]
   git_ "branch" ["-M", "main"]
 --  git_ "push" ["-u", "origin", "main"]
 
