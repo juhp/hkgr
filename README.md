@@ -176,6 +176,8 @@ and then `hkgr github` to add the github remote to your project.
 ## Requirements
 hkgr uses `cabal-install` >=2, `git`, and also `hlint` if available.
 
+For Fedora there is a copr repo: <https://copr.fedorainfracloud.org/coprs/petersen/hkgr/>
+
 ## Contribute
 `hkgr` is licensed and distributed under the GPL version 3 or later.
 

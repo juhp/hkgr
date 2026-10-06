@@ -13,7 +13,7 @@ license:             GPL-3
 license-file:        LICENSE
 author:              Jens Petersen <juhpetersen@gmail.com>
 maintainer:          Jens Petersen <juhpetersen@gmail.com>
-copyright:           2019-2025  Jens Petersen
+copyright:           2019-2026  Jens Petersen
 category:            Util
 build-type:          Simple
 data-dir:            data
