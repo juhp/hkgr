@@ -1,3 +1,13 @@
+- setup .gitignore (with .stack-work dist dist-newstyle)
+
+! run testsuite
+
+- ignore uncommitted comments
+
+- RFE: support multi-package repos
+
+- updating the template
+
 - allow upload with existing tag but no existing tarball
 
 - cannot publish if already pushed and tag not on HEAD
@@ -11,7 +21,6 @@
 - support stack (stkgr?)
 - short help
 - check/warning about unpushed tags
-- run testsuite
 - use v2 commands for cabal-install-3
 - prepare changelog from git log
 - check cabal-install version
@@ -22,3 +31,5 @@
 - --dryrun
 
 - `change-license` command
+
+- edit Hackage uploaders for a package

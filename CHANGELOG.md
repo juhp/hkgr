@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.1 (2026-10-06)
+- only add github remote if github.user defined
+- cabal check: --ignore=missing-upper-bounds
+- template: update tested-with
+
 ## 0.5 (2025-09-18)
 - support Cabal's XDG layout (#5, reported by Artem)
   ie check for ~/.config/cabal/config before ~/.cabal/config
